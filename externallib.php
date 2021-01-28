@@ -76,13 +76,13 @@ class indes_webservices extends external_api {
     public static function sync_registrations($lastsynctime) {
         global $CFG, $USER, $DB;
         require_once($CFG->dirroot . "/user/lib.php");
-		
+
         //Parameter validation
         //REQUIRED
         $params = self::validate_parameters(self::sync_registrations_parameters(),
                 array('lastsynctime' => $lastsynctime));
-				
-		$sql = "                
+
+		$sql = "
 			SELECT
 				c.id as courseId,
                 u.id as userId,
@@ -96,7 +96,7 @@ class indes_webservices extends external_api {
                 inst_country.data as institution_country,
                 gender.data as gender,
                 a.timemodified
-				
+
 				FROM
 					({$CFG->prefix}role_assignments a,
 					{$CFG->prefix}course c,
@@ -108,58 +108,58 @@ class indes_webservices extends external_api {
 				ON
 					inst_name.userid = u.id
 					AND inst_name.fieldid = " . PROFILE_FIELD_INSTITUTION_NAME . " 
-				
+
 				LEFT OUTER JOIN
 					{$CFG->prefix}user_info_data inst_type
 				ON
 					inst_type.userid = u.id
 					AND inst_type.fieldid = " . PROFILE_FIELD_INSTITUTION_TYPE . " 
-				
+
 				LEFT OUTER JOIN
 					{$CFG->prefix}user_info_data inst_city
 				ON
 					inst_city.userid = u.id
 					AND inst_city.fieldid = " . PROFILE_FIELD_INSTITUTION_CITY . "
-				
+
 				LEFT OUTER JOIN
 					{$CFG->prefix}user_info_data inst_country
 				ON
 					inst_country.userid = u.id
 					AND inst_country.fieldid = " . PROFILE_FIELD_INSTITUTION_COUNTRY . "
-				
+
 				LEFT OUTER JOIN
 					{$CFG->prefix}user_info_data title
 				ON
 					title.userid = u.id
 					AND title.fieldid = " . PROFILE_FIELD_INSTITUTION_POSITION . "
-					
+
 				LEFT OUTER JOIN
 					{$CFG->prefix}user_info_data gender
 				ON
 					gender.userid = u.id
 					AND gender.fieldid = " . PROFILE_FIELD_GENDER . "
-				
+
 				WHERE
 					a.timemodified > " . $lastsynctime . "
 					AND a.roleid = " . ROLE_STUDENT . "
-					
+
 					AND u.id = a.userid
 					AND u.deleted = 0
-					
+
 					AND a.contextid = cx.id
-					
+
 					AND cx.instanceid = c.id
 					AND (c.idnumber <> '' and c.idnumber IS NOT NULL) -- KNA ID
 					AND c.category IN (" . COURSE_CATEGORIES . ")
 				ORDER BY
 					a.timemodified ASC";
-        
+
 		$enrolledusers = $DB->get_recordset_sql($sql);
-		
+
         $users = array();
         foreach ($enrolledusers as $user) {
 			$newUser = array();
-			
+
 			$newUser['courseId'] = $user->courseid;
             $newUser['userId'] = $user->userid;
             $newUser['email'] = $user->email;
@@ -172,12 +172,12 @@ class indes_webservices extends external_api {
             $newUser['gender'] = filterProfileFields(PROFILE_FIELD_GENDER, $user->gender);
             $newUser['timemodified'] = $user->timemodified;
 			$newUser['institution_type'] = filterProfileFields(PROFILE_FIELD_INSTITUTION_TYPE, $user->institution_type);
-			
+
 			$users[] = $newUser;
         }
-		
+
         $enrolledusers->close();
-		
+
 		return $users;
     }
 
@@ -226,13 +226,13 @@ class indes_webservices extends external_api {
     public static function sync_outputs($lastsynctime) {
         global $CFG, $USER, $DB;
         require_once($CFG->dirroot . "/user/lib.php");
-		
+
         //Parameter validation
         //REQUIRED
         $params = self::validate_parameters(self::sync_outputs_parameters(),
                 array('lastsynctime' => $lastsynctime));
-				
-		$sql = "                
+
+		$sql = "
 			SELECT 
 				c.id,
 				c.idnumber, 
@@ -292,13 +292,13 @@ class indes_webservices extends external_api {
 				AND c.category IN (" . COURSE_CATEGORIES . ")
 			 ORDER BY 
 				timemodified ASC";
-        
+
 		$courses = $DB->get_recordset_sql($sql);
-		
+
         $outputs = array();
         foreach ($courses as $course) {
 			$output = array();
-			
+
 			// Business Rule: Deadline is provided in the Enrollment Request instance.
 			// Exception: Courses without Enrollment Request have the deadline as one day before the start date 
 			if($course->deadline > 0) {
@@ -306,7 +306,7 @@ class indes_webservices extends external_api {
 			} else {
 				$deadline = strtotime("-1 days", $course->startdate);
 			}			
-			
+
 			$output['courseId'] = $course->id;
             $output['knaId'] = preg_replace("/[^0-9]/","", $course->idnumber); //only numbers
             $output['name'] = $course->fullname;
@@ -322,12 +322,12 @@ class indes_webservices extends external_api {
 			$output['last_modified_timestamp'] = $course->timemodified;
 			$output['language'] = $course->language;
 			$output['total_registrations'] = $course->total_registrations;
-			
+
 			$outputs[] = $output;
         }
-		
+
         $courses->close();
-		
+
 		return $outputs;
     }
 
@@ -380,8 +380,8 @@ class indes_webservices extends external_api {
     public static function sync_total_registrations() {
         global $CFG, $USER, $DB;
         require_once($CFG->dirroot . "/user/lib.php");
-		
-		$sql = "                
+
+		$sql = "
 			SELECT 
 				c.id,
 				c.idnumber, 
@@ -440,15 +440,15 @@ class indes_webservices extends external_api {
 				AND DATEDIFF(current_date(), date_format(from_unixtime(c.startdate),'%Y%m%d')) = 7
 			 ORDER BY 
 				timemodified ASC";
-        
+
 		$courses = $DB->get_recordset_sql($sql);
-		
+
         $outputs = array();
-		
+
         foreach ($courses as $course) {
-			
+
 			$output = array();
-			
+
 			// Business Rule: Deadline is provided in the Enrollment Request instance.
 			// Exception: Courses without Enrollment Request have the deadline as one day before the start date 
 			if($course->deadline > 0) {
@@ -456,7 +456,7 @@ class indes_webservices extends external_api {
 			} else {
 				$deadline = strtotime("-1 days", $course->startdate);
 			}
-			
+
 			$output['courseId'] = $course->id;
             $output['knaId'] = preg_replace("/[^0-9]/","", $course->idnumber); //only numbers
             $output['name'] = $course->fullname;
@@ -471,12 +471,12 @@ class indes_webservices extends external_api {
 			$output['last_modified_timestamp'] = $course->timemodified;
 			$output['language'] = $course->language;
 			$output['total_registrations'] = $course->total_registrations;
-			
+
 			$outputs[] = $output;
         }
-		
+
         $courses->close();
-		
+
 		return $outputs;
     }
 
@@ -538,27 +538,27 @@ class indes_webservices extends external_api {
 		$student_role_shortname = 'student';
 		
         if (!$role = $DB->get_record('role', array('shortname' => $student_role_shortname))) {
-			throw new moodle_exception('indes_webservices_no_student_role', 'indes_webservices', '', $student_role_shortname);			
+			throw new moodle_exception('indes_webservices_no_student_role', 'indes_webservices', '', $student_role_shortname);
         }
 
         if (!$course = $DB->get_record('course', array('id' => $courseid))) {
         	throw new moodle_exception('indes_webservices_course_not_found', 'indes_webservices', '', $courseid);
         }
-		
+
         if (!$user = $DB->get_record('user', array('email' => $email))) {
         	throw new moodle_exception('indes_webservices_student_email_not_found', 'indes_webservices', '', $email);
         }
-		
+
 		// Manual enrollment method accepts an array of request
         $enrollments = array();
-		
+
         $enrollment = array();
 		$enrollment['roleid'] = $role->id; 
 		$enrollment['userid'] = $user->id;
 		$enrollment['courseid'] = $course->id;
-		
+
 		array_push($enrollments, $enrollment);
-		
+
 		// Enroll student using the manual enrollment plug-in
 		enrol_manual_external::enrol_users($enrollments);
 	}
@@ -602,7 +602,7 @@ class indes_webservices extends external_api {
 		$student_role_shortname = 'student';
 		
         if (!$role = $DB->get_record('role', array('shortname' => $student_role_shortname))) {
-			throw new moodle_exception('indes_webservices_no_student_role', 'indes_webservices', '', $student_role_shortname);			
+			throw new moodle_exception('indes_webservices_no_student_role', 'indes_webservices', '', $student_role_shortname);
         }
 
         if (!$course = $DB->get_record('course', array('id' => $courseid))) {
@@ -651,13 +651,13 @@ class indes_webservices extends external_api {
 	public static function sync_participants_dropout($lastsynctime) {
 		global $CFG, $USER, $DB;
         require_once($CFG->dirroot . "/user/lib.php");
-		
+
 		//Parameter validation
         //REQUIRED
         $params = self::validate_parameters(self::sync_participants_dropout_parameters(),
                 array('lastsynctime' => $lastsynctime));
-				
-		$sql = "                
+
+		$sql = "
 			SELECT
 				c.id as courseId,
 				u.id as userId,
@@ -686,7 +686,7 @@ class indes_webservices extends external_api {
 				AND ct.contextlevel = ". CONTEXT_COURSE;
 
 		$usersDropedout = $DB->get_recordset_sql($sql);
-		
+
 		$users = array();
         foreach ($usersDropedout as $user) {
 			$newUser = array();
@@ -699,11 +699,11 @@ class indes_webservices extends external_api {
 
 			$users[] = $newUser;
         }
-        
+
         $usersDropedout->close();
-        
+
         return $users;
-				
+
 	}
 
 
@@ -723,7 +723,7 @@ class indes_webservices extends external_api {
 					'timemodified'	=> new external_value(PARAM_RAW, 'timemodified of the user')
 				)
 			)
-		);		
+		);
     }
 
 
@@ -745,13 +745,13 @@ class indes_webservices extends external_api {
     public static function sync_participants_profile_updated($lastsynctime) {
         global $CFG, $USER, $DB;
         require_once($CFG->dirroot . "/user/lib.php");
-		
+
         //Parameter validation
         //REQUIRED
         $params = self::validate_parameters(self::sync_participants_profile_updated_parameters(),
                 array('lastsynctime' => $lastsynctime));
-				
-		$sql = "                
+
+		$sql = "
 			SELECT
 				c.id as courseId,
                 u.id as userId,
@@ -780,9 +780,9 @@ class indes_webservices extends external_api {
 					AND c.category IN (" . COURSE_CATEGORIES . ")
 				ORDER BY
 					u.timemodified ASC";
-        
+
 		$usersProfileUpdated = $DB->get_recordset_sql($sql);
-		
+
         $users = array();
         foreach ($usersProfileUpdated as $user) {
 			$newUser = array();
@@ -818,7 +818,7 @@ class indes_webservices extends external_api {
 					'timemodified'	=> new external_value(PARAM_RAW, 'timemodified of the user')
 				)
 			)
-		);		
+		);
     }
 
 
@@ -840,12 +840,12 @@ class indes_webservices extends external_api {
     public static function sync_facilitators($lastsynctime) {
         global $CFG, $USER, $DB;
         require_once($CFG->dirroot . "/user/lib.php");
-		
+
         //Parameter validation
         //REQUIRED
         $params = self::validate_parameters(self::sync_facilitators_parameters(),
                 array('lastsynctime' => $lastsynctime));
-		
+
 		$sql = "
 			SELECT
 				c.id as courseid,
@@ -924,9 +924,9 @@ class indes_webservices extends external_api {
 			 ORDER BY
 				a.timemodified ASC
 		";
-        
+
 		$facilitators = $DB->get_recordset_sql($sql);
-		
+
         $users = array();
         foreach ($facilitators as $user) {
 			$newUser = array();
@@ -941,14 +941,14 @@ class indes_webservices extends external_api {
             $newUser['institution_city'] = $user->institution_city;
             $newUser['institution_country'] = $user->institution_country;
             $newUser['institution_type'] = filterProfileFields(PROFILE_FIELD_INSTITUTION_TYPE, $user->institution_type);
-			$newUser['gender'] = $user->gender;
+			$newUser['gender'] = filterProfileFields(PROFILE_FIELD_GENDER, $user->gender);			
 			$newUser['timemodified'] = $user->timemodified;
-			
+
 			$users[] = $newUser;
         }
-		
+
         $facilitators->close();
-        
+
 		return $users;
     }
 
@@ -971,12 +971,12 @@ class indes_webservices extends external_api {
 					'institution_name'		=> new external_value(PARAM_RAW, 'Name of the institution that the Facilitator belongs to'),
 					'institution_city'		=> new external_value(PARAM_RAW, 'City of the institution that the Facilitator belongs to'),
 					'institution_country'	=> new external_value(PARAM_RAW, 'Country of the institution that the Facilitator belongs to'),
-					'institution_type'		=> new external_value(PARAM_RAW, 'Type of the institution that the Facilitator belongs to'),					
+					'institution_type'		=> new external_value(PARAM_RAW, 'Type of the institution that the Facilitator belongs to'),
 					'gender'    			=> new external_value(PARAM_RAW, 'Facilitator\'s gender'),					
 					'timemodified'    		=> new external_value(PARAM_RAW, 'Time when the facilitator was assigned to the course')
 				)
 			)
-		);		
+		);
     }
 
 
@@ -1002,27 +1002,27 @@ class indes_webservices extends external_api {
 	 */
 	public static function limesurvey_mark_as_completed($surveyid, $userid) {
 		global $DB, $CFG, $PAGE;
-		
+
 		require_once($CFG->dirroot.'/enrol/locallib.php');
-		require_once($CFG->libdir.'/completionlib.php');		
-		
+		require_once($CFG->libdir.'/completionlib.php');
+
 		if (!$limesurvey = $DB->get_record('limesurvey', array('surveyid' => $surveyid))) {
 			throw new moodle_exception('limesurvey_not_found', 'indes_webservices', '', $surveyid);
 		}
-		
+
 		if (!$user = $DB->get_record('user', array('id' => $userid))) {
 			throw new moodle_exception('limesurvey_user_not_found', 'indes_webservices', '', $userid);
 		}
-		
+
         $course = $DB->get_record('course', array('id'=> $limesurvey->course), '*', MUST_EXIST);
-		
+
 		$completion_info = new completion_info($course);
-		
+
 		$params = array('userid'=>$userid, 'surveyid'=>$limesurvey->id);
 
         $cm = get_coursemodule_from_instance('limesurvey', $limesurvey->id, 0, false, MUST_EXIST);	
 
-		if($completion_info->is_enabled($cm) && !$DB->record_exists('limesurvey_tracking', $params)){		
+		if($completion_info->is_enabled($cm) && !$DB->record_exists('limesurvey_tracking', $params)){
 
 			$record = new stdClass();
 			$record->surveyid		= $limesurvey->id;
@@ -1209,10 +1209,10 @@ class indes_webservices extends external_api {
 			$users_in_course[$users->id]['email'] = $users->email;
 			
 			$result_grades = grade_get_course_grades($courseid,$users->id);
-        
+
 			foreach($result_grades->grades as $key => $value) {
 				$users_in_course[$users->id]['final_grade'] = $value->grade;
-			}			
+			}
 			
 			$sql = "
 				SELECT 
@@ -1327,7 +1327,7 @@ class indes_webservices extends external_api {
         return new external_multiple_structure(
             new external_single_structure(
                 array(
-					'courseId'    	=> new external_value(PARAM_NUMBER, 'ID of the course'),					
+					'courseId'    	=> new external_value(PARAM_NUMBER, 'ID of the course'),
 					'userId'    	=> new external_value(PARAM_NUMBER, 'ID of the user'),
 					'email'    		=> new external_value(PARAM_RAW, 'Email of the user'),
 					'scorms' 	=> new external_multiple_structure(
@@ -1353,7 +1353,7 @@ class indes_webservices extends external_api {
     public static function get_grades_participant_category_parameters() {
         return new external_function_parameters(
             array(
-                    'categoryid'  => new external_value(PARAM_INT, 'ID of Moodle category')
+                    'categoryid'  => new external_value(PARAM_RAW, 'IDs of Moodle categories, separated by comma')
                 )
         );
     }
@@ -1367,7 +1367,7 @@ class indes_webservices extends external_api {
         global $CFG, $USER, $DB;
         require_once($CFG->dirroot . "/user/lib.php");
 		
-		$sql = "                
+		$sql = "
 				SELECT
 					c.id as course_id,
 					c.category,
@@ -1401,8 +1401,7 @@ class indes_webservices extends external_api {
 					ra.roleid,
 					ra.timemodified,
 					COALESCE(ROUND(gg.finalgrade,2),0) as finalgrade,
-					(SELECT d_inst.data FROM {$CFG->prefix}user_info_data d_inst WHERE d_inst.fieldid = 22 AND d_inst.userid = u.id) as nacionality,
-					(SELECT d_inst.data FROM {$CFG->prefix}user_info_data d_inst WHERE d_inst.fieldid = 10 AND d_inst.userid = u.id) as country_work,
+					u.country,					
 					(SELECT d_inst.data FROM {$CFG->prefix}user_info_data d_inst WHERE d_inst.fieldid = 15 AND d_inst.userid = u.id) as gender,
 					(SELECT d_inst.data FROM {$CFG->prefix}user_info_data d_inst WHERE d_inst.fieldid = 6 AND d_inst.userid = u.id) as highest_degree,
 					(SELECT d_inst.data FROM {$CFG->prefix}user_info_data d_inst WHERE d_inst.fieldid = 7 AND d_inst.userid = u.id) as institution,
@@ -1426,17 +1425,18 @@ class indes_webservices extends external_api {
 					WHERE
 					ct.contextlevel = 50
 					AND (ra.roleid = " . ROLE_STUDENT . " OR ra.roleid = " . ROLE_DROPOUT . ")
-					AND (cca.id = $categoryid OR cca.parent = $categoryid OR cca.path like '%/$categoryid/%')
+					AND cca.id IN ($categoryid)
 					";
+					//AND (cca.id = $categoryid OR cca.parent = $categoryid OR cca.path like '%/$categoryid/%')
 
 		$participants = $DB->get_recordset_sql($sql);
 		
         $registrations = array();
 		
         foreach ($participants as $participant) {
-			
+
 			$registration = array();
-			
+
 			$fecha_inicio = date_create();
 			$fecha_inicio = date_timestamp_set($fecha_inicio, $participant->startdate);
 
@@ -1467,13 +1467,15 @@ class indes_webservices extends external_api {
             $registration['roleid'] = $participant->roleid;
             $registration['timemodified'] = date('Y-m-d H:i:s', $participant->timemodified);
             $registration['finalgrade'] = $participant->finalgrade;
-			$registration['nacionality'] = $participant->nacionality;
-            $registration['institution_country'] = $participant->country_work;
-			$registration['gender'] = $participant->gender;
-			$registration['degree'] = $participant->highest_degree;
+			//$registration['nacionality'] = $participant->nacionality;
+            //$registration['institution_country'] = $participant->country_work;
+			//$registration['country'] = $participant->country;
+			$registration['country'] = filterProfileFields(PROFILE_COUNTRY, $participant->country);
+			$registration['gender'] = filterProfileFields(PROFILE_FIELD_GENDER, $participant->gender);
+			$registration['degree'] = filterProfileFields(PROFILE_FIELD_HIGHEST_DEGREE, $participant->highest_degree);
             $registration['institution_name'] = $participant->institution;
             $registration['institution_type'] = filterProfileFields(PROFILE_FIELD_INSTITUTION_TYPE, $participant->institution_type);
-			
+
 			$registrations[] = $registration;
         }
 
@@ -1511,8 +1513,9 @@ class indes_webservices extends external_api {
 					'roleid'				=> new external_value(PARAM_RAW, 'User\'s role ID'),
 					'timemodified'    		=> new external_value(PARAM_RAW, 'Time when the users was enrolled to the course'),
 					'finalgrade'			=> new external_value(PARAM_NUMBER, 'Final grade in the course'),
-					'nacionality'			=> new external_value(PARAM_RAW, 'User\'s nacionality'),
-					'institution_country'	=> new external_value(PARAM_RAW, 'Country of the institution that the Facilitator belongs to'),
+					//'nacionality'			=> new external_value(PARAM_RAW, 'User\'s nacionality'),
+					//'institution_country'	=> new external_value(PARAM_RAW, 'Country of the institution that the Facilitator belongs to'),
+					'country'				=> new external_value(PARAM_RAW, 'Participant\'s Country'),					
 					'gender'    			=> new external_value(PARAM_RAW, 'User\'s gender'),
 					'degree'    			=> new external_value(PARAM_RAW, 'User\'s degree'),					
 					'institution_name'		=> new external_value(PARAM_RAW, 'Name of the institution that the Facilitator belongs to'),
@@ -1530,7 +1533,7 @@ class indes_webservices extends external_api {
     public static function get_enrollment_participants_category_parameters() {
         return new external_function_parameters(
             array(
-                    'categoryid'  => new external_value(PARAM_INT, 'ID of Moodle category')
+                    'categoryid'  => new external_value(PARAM_RAW, 'IDs of Moodle categories, separated by comma')
                 )
         );
     }
@@ -1543,8 +1546,8 @@ class indes_webservices extends external_api {
     public static function get_enrollment_participants_category($categoryid) {
         global $CFG, $USER, $DB;
         require_once($CFG->dirroot . "/user/lib.php");
-		
-		$sql = "                
+
+		$sql = "
 				SELECT
 					c.id as course_id,
 					c.category,
@@ -1582,15 +1585,16 @@ class indes_webservices extends external_api {
 					INNER JOIN {$CFG->prefix}user u ON u.id = er.userid
 					LEFT JOIN {$CFG->prefix}course_categories cca ON c.category = cca.id
 					WHERE
-					(cca.id = $categoryid OR cca.parent = $categoryid OR cca.path like '%/$categoryid/%')
+					cca.id IN ($categoryid)
 					";
+					//(cca.id = $categoryid OR cca.parent = $categoryid OR cca.path like '%/$categoryid/%')
 
 		$enrollments = $DB->get_recordset_sql($sql);
-		
+
         $registrations = array();
-		
+
         foreach ($enrollments as $enrollment) {
-			
+
 			$registration = array();
 
 			$registration['courseid'] = $enrollment->course_id;
@@ -1605,19 +1609,19 @@ class indes_webservices extends external_api {
             $registration['email'] = $enrollment->email;
 			$registration['lastip'] = $enrollment->lastip;
             $registration['institution_name'] = $enrollment->institution;
-			$registration['gender'] = $enrollment->gender;
+			$registration['gender'] = filterProfileFields(PROFILE_FIELD_GENDER, $enrollment->gender);
 			$registration['work_position'] = $enrollment->work_position;
 			$registration['study_field'] = $enrollment->study_field;
-			$registration['degree'] = $enrollment->highest_degree;			
+			$registration['degree'] = filterProfileFields(PROFILE_FIELD_HIGHEST_DEGREE, $enrollment->highest_degree);
             $registration['institution_country'] = $enrollment->country_work;
             $registration['submitted_on'] = date('Y-m-d H:i:s', $enrollment->submitted_on);
 			$registration['enrolment_status'] = $enrollment->enrolment_status;
-			
+
 			$registrations[] = $registration;
         }
-		
+
         $enrollments->close();
-		
+
 		return $registrations;
     }
 
@@ -1635,20 +1639,20 @@ class indes_webservices extends external_api {
 					'shortname'    			=> new external_value(PARAM_RAW, 'Short Name of the course'),
 					'name'    				=> new external_value(PARAM_RAW, 'Full Name of the course'),
 					'start_date'			=> new external_value(PARAM_RAW, 'Date when the course will start'),
-					'end_date'				=> new external_value(PARAM_RAW, 'Date when the course will end'),										
+					'end_date'				=> new external_value(PARAM_RAW, 'Date when the course will end'),
 					'userid'    			=> new external_value(PARAM_NUMBER, 'User\'s ID'),
 					'firstname'    			=> new external_value(PARAM_RAW, 'User\'s First Name'),
 					'lastname'    			=> new external_value(PARAM_RAW, 'User\'s Last Name'),
 					'email'    				=> new external_value(PARAM_RAW, 'User\'s Email'),
-					'lastip'    			=> new external_value(PARAM_RAW, 'User\'s Last IP '),					
+					'lastip'    			=> new external_value(PARAM_RAW, 'User\'s Last IP '),
 					'institution_name'		=> new external_value(PARAM_RAW, 'Name of the institution that the Facilitator belongs to'),
 					'gender'    			=> new external_value(PARAM_RAW, 'User\'s gender'),
 					'work_position'			=> new external_value(PARAM_RAW, 'User\'s work position'),
 					'study_field'			=> new external_value(PARAM_RAW, 'User\'s study field'),
-					'degree'    			=> new external_value(PARAM_RAW, 'User\'s degree'),					
+					'degree'    			=> new external_value(PARAM_RAW, 'User\'s degree'),
 					'institution_country'	=> new external_value(PARAM_RAW, 'Country of the institution that the Facilitator belongs to'),
 					'submitted_on'    		=> new external_value(PARAM_RAW, 'Time when the users was enrolled to the course'),
-					'enrolment_status'    	=> new external_value(PARAM_RAW, 'Current enrolment status')										
+					'enrolment_status'    	=> new external_value(PARAM_RAW, 'Current enrolment status')
 				)
 			)
 		);		
@@ -1677,13 +1681,13 @@ class indes_webservices extends external_api {
 
 		require_once("../../config.php");
 		require_once($CFG->dirroot . "/grade/lib.php");
-		require_once($CFG->dirroot . "/grade/querylib.php");				
-	
+		require_once($CFG->dirroot . "/grade/querylib.php");
+
 		//Parameter validation
         //REQUIRED
         $params = self::validate_parameters(self::validate_certificate_parameters(),
                 array('certcode' => $certcode));
-				
+
 		$ufields = user_picture::fields('u');
 		$sql = "SELECT ci.timecreated AS citimecreated,
      	ci.code, ci.certificateid, ci.userid, $ufields, c.*, u.id AS id, u.*
@@ -1693,11 +1697,11 @@ class indes_webservices extends external_api {
                            INNER JOIN {$CFG->prefix}certificate c
                            ON c.id = ci.certificateid
                            WHERE ci.code = '" . $certcode . "'";
-		
+
 		$certificates = $DB->get_recordset_sql($sql);
 
 		$outputs = array();
-		
+
 		foreach ($certificates as $certdata) {
 			$output = array();
 			$output['certificateid'] = $certdata->certificateid;
@@ -1710,7 +1714,7 @@ class indes_webservices extends external_api {
 
 			// Date format.
 			$dateformat = get_string('strftimedate', 'langconfig');
-			
+
 			// Modify printdate so that date is always printed.
 			$certdata->printdate = 1;
 			$certrecord = new stdClass();
@@ -1718,12 +1722,12 @@ class indes_webservices extends external_api {
 			$certrecord->code = $certdata->code;
 			$certrecord->userid = $certdata->userid;
 			$userid = $certrecord->id = $certdata->id;
-			
+
 			// Retrieving grade and date for each certificate.
 			$result_grade = grade_get_course_grade($userid, $course->id);
 			$final_grade = $result_grade->grade;
 			$date = $certrecord->timecreated = $certdata->citimecreated;
-			
+
 			if ($date) {
 				$output['date'] = userdate($date, $dateformat);
 			}
@@ -1733,7 +1737,7 @@ class indes_webservices extends external_api {
 
 			$outputs[] = $output;
 		}
-		
+
 		$certificates->close();
 
 		return $outputs;
@@ -1756,7 +1760,7 @@ class indes_webservices extends external_api {
 					'date'				=> new external_value(PARAM_RAW, 'Date when the certificate was gained')
 				)
 			)
-		);		
+		);
     }
 
 
@@ -1884,7 +1888,7 @@ class indes_webservices extends external_api {
 		$questionnaires = $DB->get_recordset_sql($sql);
 
 		$questionnaires_in_course = array();
-		
+
 		foreach ($questionnaires as $questionnaire) {
 			$questionnaires_info = array();
 			$questionnaires_info['courseid'] = $questionnaire->courseid;
@@ -2137,11 +2141,11 @@ class indes_webservices extends external_api {
 					";
 
 			$participants_result = $DB->get_recordset_sql($sql_participants);
-			
+
 			$course_info = get_course($course->courseid);
-			
+
 			$completion = new \completion_info($course_info);
-			
+
 			$participant_info['participants'] = array();
 			foreach ($participants_result as $participant) {
 				$percentage = core_completion\progress::get_course_progress_percentage($course_info, $participant->user_id);
@@ -2158,11 +2162,11 @@ class indes_webservices extends external_api {
 				}
 			}
 			$participants_count = 0;
-			
+
 			$participants_in_course[] = $participant_info;
         }
         $courses->close();
-		
+
 		return $participants_in_course;
     }
 
@@ -2190,13 +2194,10 @@ class indes_webservices extends external_api {
 														'email'  				=> new external_value(PARAM_RAW, 'Email of the participant'),
 														'userID'  				=> new external_value(PARAM_NUMBER, 'UserID of the participant'),
 														'percentage'  			=> new external_value(PARAM_NUMBER, 'Participant percentage course completed')
-
-
-
 													)
 												), 'User fields', VALUE_OPTIONAL)
                 )
-            ) 
+            )
 		);
     }
 
@@ -2227,7 +2228,7 @@ class indes_webservices extends external_api {
 		$course = $DB->get_record('course', array('idnumber'=>$offering), '*', MUST_EXIST);
 
 		$participants_in_course = array();
-			
+
 		$participant_info = array();
 
 		$idnumber = explode("|", $course->idnumber);
@@ -2238,6 +2239,8 @@ class indes_webservices extends external_api {
 		$participant_info['shortname'] = $course->shortname;
 		$participant_info['courseTitle'] = $course->fullname;
 
+		/** Old method to get the template Name to be used in SurveyMonkey */
+		/*
 		$sql_sm = "
 			SELECT 
 				d.id,
@@ -2265,6 +2268,9 @@ class indes_webservices extends external_api {
 
 		$participant_info['templateName'] = $ids[template];
 		$participant_info['notificationEmail'] = $ids[email];
+		*/
+		$participant_info['templateName'] = '';
+		$participant_info['notificationEmail'] = '';
 
 		$sql_participants = "
 			SELECT
@@ -2310,10 +2316,10 @@ class indes_webservices extends external_api {
 			}
 		}*/
 		//Fin metodo, extraer solamente los participantes que tiene 100% de completado en el curso		
-		
+
 		//Inicio metodo,extraer todos los participantes registrados
 		$completion = new \completion_info($course);
-		
+
 		$participant_info['participants'] = array();
 		foreach ($participants_result as $participant) {
 			$percentage = core_completion\progress::get_course_progress_percentage($course, $participant->user_id);			
@@ -2326,10 +2332,10 @@ class indes_webservices extends external_api {
 			$participant_info['participants'][$participants_count][lastName] = $participant->lastname;
 			$participant_info['participants'][$participants_count][email] = $participant->email;
 			$participant_info['participants'][$participants_count][percentage] = $percentage;
-		}		
+		}
 		//Fin metodo,extraer todos los participantes registrados
 		$participants_count = 0;
-			
+
 		$participants_in_course[] = $participant_info;
 
 		return $participants_in_course;
@@ -2359,13 +2365,10 @@ class indes_webservices extends external_api {
 														'email'  				=> new external_value(PARAM_RAW, 'Email of the participant'),
 														'userID'  				=> new external_value(PARAM_NUMBER, 'UserID of the participant'),
 														'percentage'  			=> new external_value(PARAM_NUMBER, 'Participant percentage course completed')
-
-
-
 													)
 												), 'User fields', VALUE_OPTIONAL)
                 )
-            ) 
+            )
 		);
     }
 
@@ -2382,14 +2385,14 @@ class indes_webservices extends external_api {
 
 
     /**
-     * It retrieves the total of courses with offering in the field id number
+     * It retrieves the total of courses with offering in the field id number to create Surveys on SurveyMonkey
      * @return array List of courses
      */
     public static function get_courses_with_offering() {
         global $CFG, $USER, $DB;
         require_once($CFG->dirroot . "/user/lib.php");
 		
-		$sql = "                
+		$sql = "
 			SELECT 
 				c.id,
 				c.idnumber, 
@@ -2410,15 +2413,17 @@ class indes_webservices extends external_api {
 				{$CFG->prefix}course c
 			 WHERE 
 				c.idnumber LIKE 'ITEM%'
+				AND YEAR(from_unixtime(c.startdate)) = YEAR(current_date())
+				AND (SELECT c_inst.value FROM mdl_customfield_data c_inst WHERE c_inst.fieldid = 1 AND c_inst.instanceid = c.id) = 1
 			 ORDER BY 
 				c.id ASC";
 
 		$courses = $DB->get_recordset_sql($sql);
-		
+
         $outputs = array();
-		
+
         foreach ($courses as $course) {
-			
+
 			$output = array();
 
 			$output['courseId'] = $course->id;
@@ -2434,13 +2439,13 @@ class indes_webservices extends external_api {
 				}
 			}else{
 				$output['enddate'] = $course->enddate;
-			}			
+			}
 
 			$outputs[] = $output;
         }
-		
+
         $courses->close();
-		
+
 		return $outputs;
     }
 
@@ -2461,7 +2466,7 @@ class indes_webservices extends external_api {
 					'enddate'    				=> new external_value(PARAM_RAW, 'End date of the course im timestamp')
 				)
 			)
-		);		
+		);
     }
 
 
@@ -2487,22 +2492,22 @@ class indes_webservices extends external_api {
 	 */
 	public static function surveymonkey_mark_as_completed($surveyid, $useremail) {
 		global $DB, $CFG, $PAGE;
-		
+
 		require_once($CFG->dirroot.'/enrol/locallib.php');
 		require_once($CFG->libdir.'/completionlib.php');		
-		
+
 		if (!$surveymonkey = $DB->get_record('surveymonkey', array('surveyid' => $surveyid))) {
 			throw new moodle_exception('surveymonkey_not_found', 'indes_webservices', '', $surveyid);
 		}
-		
+
 		if (!$user = $DB->get_record('user', array('email' => $useremail))) {
 			throw new moodle_exception('surveymonkey_user_not_found', 'indes_webservices', '', $useremail);
 		}
-		
+
         $course = $DB->get_record('course', array('id'=> $surveymonkey->course), '*', MUST_EXIST);
-		
+
 		$completion_info = new completion_info($course);
-		
+
 		$params = array('userid'=>$user->id, 'surveyid'=>$surveymonkey->id);
 		//$params = array('useremail'=>$useremail, 'surveyid'=>$surveymonkey->id);
 
@@ -2551,7 +2556,7 @@ class indes_webservices extends external_api {
         global $CFG, $USER, $DB;
         require_once($CFG->dirroot . "/user/lib.php");
 		
-		$sql = "                
+		$sql = "
 			SELECT 
 				sm.id,
 				sm.name,
@@ -2565,11 +2570,11 @@ class indes_webservices extends external_api {
 				sm.course ASC";
 
 		$courses = $DB->get_recordset_sql($sql);
-		
+
         $outputs = array();
-		
+
         foreach ($courses as $course) {
-			
+
 			$output = array();
 
 			$output['smId'] = $course->id;
@@ -2579,9 +2584,9 @@ class indes_webservices extends external_api {
 
 			$outputs[] = $output;
         }
-		
+
         $courses->close();
-		
+
 		return $outputs;
     }
 
@@ -2621,7 +2626,7 @@ class indes_webservices extends external_api {
     public static function get_sm_users_completed() {
         global $CFG, $USER, $DB;
         require_once($CFG->dirroot . "/user/lib.php");
-		
+
 		$sql = "
 			SELECT
 				s.course,
@@ -2692,28 +2697,28 @@ function filterProfileFields($field, $value){
 		case PROFILE_FIELD_INSTITUTION_TYPE:
 			$filteredValue = trim(format_string($value));
 			
-			if (preg_match('/International Organization/', $filteredValue) || preg_match('/Org Internacional/', $filteredValue) || preg_match('/Organización Internacional/', $filteredValue)) {
+			if (preg_match('/International Organization/', $filteredValue) || preg_match('/Org Internacional/', $filteredValue) || preg_match('/Organización Internacional/', $filteredValue) || preg_match('/Org International/', $filteredValue)) {
 				$filteredValue = "International Organization";
 			}
-			elseif (preg_match('/Local Government/', $filteredValue) || preg_match('/Gobierno Local/', $filteredValue) || preg_match('/Governo Local/', $filteredValue)) {
+			elseif (preg_match('/Local Government/', $filteredValue) || preg_match('/Gobierno Local/', $filteredValue) || preg_match('/Governo Local/', $filteredValue) || preg_match('/Organisme Local/', $filteredValue)) {
 				$filteredValue = "Local Government";
 			}
-			elseif (preg_match('/Univ/Educational Center/', $filteredValue) || preg_match('/Univ/Centro Educativo/', $filteredValue) || preg_match('/Univ/Centro Educacional/', $filteredValue)) {
+			elseif (preg_match('/Univ/Educational Center/', $filteredValue) || preg_match('/Univ/Centro Educativo/', $filteredValue) || preg_match('/Univ/Centro Educacional/', $filteredValue) || preg_match('/Univ/Centre d/', $filteredValue)) {
 				$filteredValue = "Univ/Educational Center";
 			}
-			elseif (preg_match('/Research Center/', $filteredValue) || preg_match('/Centro de Investigación/', $filteredValue) || preg_match('/Centro de Pesquisa/', $filteredValue)) {
+			elseif (preg_match('/Research Center/', $filteredValue) || preg_match('/Centro de Investigación/', $filteredValue) || preg_match('/Centro de Pesquisa/', $filteredValue) || preg_match('/Centre de Recherche/', $filteredValue)) {
 				$filteredValue = "Research Center";
 			}
-			elseif (preg_match('/State\/Province Government/', $filteredValue) || preg_match('/Gobierno del Estado\/Provincia/', $filteredValue) || preg_match('/Gobierno del Estado/', $filteredValue)  || preg_match('/Governo Estadual/', $filteredValue)) {
+			elseif (preg_match('/State\/Province Government/', $filteredValue) || preg_match('/Gobierno del Estado\/Provincia/', $filteredValue) || preg_match('/Gobierno del Estado/', $filteredValue)  || preg_match('/Governo Estadual/', $filteredValue) || preg_match('/tat\/de Province/', $filteredValue)) {
 				$filteredValue = "State/Province Government";
 			}
 			elseif (preg_match('/National Government/', $filteredValue) || preg_match('/Gobierno Nacional/', $filteredValue) || preg_match('/Governo Nacional/', $filteredValue)) {
 				$filteredValue = "National Government";
 			}
-			elseif (preg_match('/NGOs\/Foundations/', $filteredValue) || preg_match('/ONGs \/ Fundaciones/', $filteredValue) || preg_match('/ONGs \/ Fundações/', $filteredValue)) {
+			elseif (preg_match('/NGOs\/Foundations/', $filteredValue) || preg_match('/ONGs \/ Fundaciones/', $filteredValue) || preg_match('/ONGs \/ Fundações/', $filteredValue) || preg_match('/ONG\/Fondation/', $filteredValue)) {
 				$filteredValue = "NGOs/Foundations";
 			}
-			elseif (preg_match('/Private Sector/', $filteredValue) || preg_match('/Sector Privado/', $filteredValue) || preg_match('/Setor Privado/', $filteredValue)) {
+			elseif (preg_match('/Private Sector/', $filteredValue) || preg_match('/Sector Privado/', $filteredValue) || preg_match('/Setor Privado/', $filteredValue) || preg_match('/Secteur privé/', $filteredValue)) {
 				$filteredValue = "Private Sector";
 			}				
 			
@@ -2722,17 +2727,49 @@ function filterProfileFields($field, $value){
 		case PROFILE_FIELD_GENDER:
 			$filteredValue = trim(format_string($value));
 			
-			if (strcasecmp($filteredValue, "Female") ||
-			strcasecmp($filteredValue, "Femenino") ||
-			strcasecmp($filteredValue, "Feminino")){
+			if (preg_match('/Female/', $filteredValue) || preg_match('/Feminino/', $filteredValue) || preg_match('/Femenino/', $filteredValue) || preg_match('/Féminin/', $filteredValue)) {
 				$filteredValue = "F";
 			}
-			
-			elseif (strcasecmp($filteredValue, "Male") ||
-			strcasecmp($filteredValue, "Masculino")){
+			elseif (preg_match('/Male/', $filteredValue) || preg_match('/Masculino/', $filteredValue) || preg_match('/Masculin/', $filteredValue)) {
 				$filteredValue = "M";
 			}
+			elseif (preg_match('/NC (Not Completed)/', $filteredValue) || preg_match('/NC (Não Concluído)/', $filteredValue) || preg_match('/NC (No Completado)/', $filteredValue) || preg_match('/Pas Achevé/', $filteredValue)) {
+				$filteredValue = "NC (Not Completed)";
+			}
+
+			break;
+
+		case PROFILE_FIELD_HIGHEST_DEGREE:
+			$filteredValue = trim(format_string($value));
 			
+			if (preg_match('/4 Year College/', $filteredValue) || preg_match('/Graduación/', $filteredValue) || preg_match('/Graduação/', $filteredValue) || preg_match('/Licence/', $filteredValue)) {
+				$filteredValue = "4 Year College";
+			}
+			elseif (preg_match('/High School/', $filteredValue) || preg_match('/Secundario/', $filteredValue) || preg_match('/2º Grau/', $filteredValue) || preg_match('/Enseignement Secondaire/', $filteredValue)) {
+				$filteredValue = "High School";
+			}
+			elseif (preg_match('/Masters Degree/', $filteredValue) || preg_match('/Maestría/', $filteredValue) || preg_match('/Mestrado/', $filteredValue) || preg_match('/Master/', $filteredValue)) {
+				$filteredValue = "Masters Degree";
+			}
+			elseif (preg_match('/Research Center/', $filteredValue) || preg_match('/Centro de Investigación/', $filteredValue) || preg_match('/Centro de Pesquisa/', $filteredValue)) {
+				$filteredValue = "Other";
+			}
+			elseif (preg_match('/Ph.D/JD/MD/', $filteredValue) || preg_match('/Doctorado/', $filteredValue) || preg_match('/Doutorado/', $filteredValue)  || preg_match('/Doctorat/Doctorat en Médecine\/Doctorat de Droit/', $filteredValue)) {
+				$filteredValue = "Ph.D/JD/MD";
+			}
+			
+			break;
+			
+		case PROFILE_COUNTRY:
+			$filteredValue = trim(format_string($value));
+
+			$countries = get_string_manager()->get_list_of_countries();
+			if (array_key_exists($filteredValue, $countries)){
+				$filteredValue = $countries[$filteredValue];
+			}else{
+				$filteredValue = '';
+			}
+
 			break;
 	}
 
