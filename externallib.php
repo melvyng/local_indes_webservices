@@ -48,6 +48,8 @@ define('PROFILE_FIELD_INSTITUTION_CITY', 9);
 define('PROFILE_FIELD_INSTITUTION_COUNTRY', 10);
 define('PROFILE_FIELD_INSTITUTION_POSITION', 17);
 define('PROFILE_FIELD_GENDER', 15);
+define('PROFILE_FIELD_HIGHEST_DEGREE', 6);
+define('PROFILE_COUNTRY', 'US');
 
 // Paypal Enrollment Request constants
 define('ENROLLMENT_PAYPAL_REGULAR', "REGULAR");
@@ -83,8 +85,8 @@ class indes_webservices extends external_api {
                 array('lastsynctime' => $lastsynctime));
 
 		$sql = "
-			SELECT
-				c.id as courseId,
+		    SELECT
+                c.id as courseId,
                 u.id as userId,
                 u.email,
                 u.firstname,
@@ -158,9 +160,9 @@ class indes_webservices extends external_api {
 
         $users = array();
         foreach ($enrolledusers as $user) {
-			$newUser = array();
+            $newUser = array();
 
-			$newUser['courseId'] = $user->courseid;
+            $newUser['courseId'] = $user->courseid;
             $newUser['userId'] = $user->userid;
             $newUser['email'] = $user->email;
             $newUser['firstname'] = $user->firstname;
@@ -171,14 +173,14 @@ class indes_webservices extends external_api {
             $newUser['institution_country'] = $user->institution_country;
             $newUser['gender'] = filterProfileFields(PROFILE_FIELD_GENDER, $user->gender);
             $newUser['timemodified'] = $user->timemodified;
-			$newUser['institution_type'] = filterProfileFields(PROFILE_FIELD_INSTITUTION_TYPE, $user->institution_type);
+            $newUser['institution_type'] = filterProfileFields(PROFILE_FIELD_INSTITUTION_TYPE, $user->institution_type);
 
-			$users[] = $newUser;
+            $users[] = $newUser;
         }
 
         $enrolledusers->close();
 
-		return $users;
+        return $users;
     }
 
 
@@ -191,20 +193,20 @@ class indes_webservices extends external_api {
             new external_single_structure(
                 array(
                     'courseId'				=> new external_value(PARAM_NUMBER, 'ID of the course'),
-					'userId'				=> new external_value(PARAM_NUMBER, 'ID of the user'),
-					'email'					=> new external_value(PARAM_RAW, 'Email of the user'),
-					'firstname'				=> new external_value(PARAM_RAW, 'firstname of the user'),
-					'lastname'				=> new external_value(PARAM_RAW, 'lastname of the user'),
-					'title'					=> new external_value(PARAM_RAW, 'title of the user'),
-					'institution_name'		=> new external_value(PARAM_RAW, 'institution_name of the user'),
-					'institution_type'		=> new external_value(PARAM_RAW, 'institution_type of the user'),
-					'institution_city'		=> new external_value(PARAM_RAW, 'institution_city of the user'),
-					'institution_country'	=> new external_value(PARAM_RAW, 'institution_country of the user'),
-					'gender'    			=> new external_value(PARAM_RAW, 'gender of the user'),
-					'timemodified'			=> new external_value(PARAM_RAW, 'timemodified of the user')
-				)
-			)
-		);		
+                    'userId'				=> new external_value(PARAM_NUMBER, 'ID of the user'),
+                    'email'					=> new external_value(PARAM_RAW, 'Email of the user'),
+                    'firstname'				=> new external_value(PARAM_RAW, 'firstname of the user'),
+                    'lastname'				=> new external_value(PARAM_RAW, 'lastname of the user'),
+                    'title'					=> new external_value(PARAM_RAW, 'title of the user'),
+                    'institution_name'		=> new external_value(PARAM_RAW, 'institution_name of the user'),
+                    'institution_type'		=> new external_value(PARAM_RAW, 'institution_type of the user'),
+                    'institution_city'		=> new external_value(PARAM_RAW, 'institution_city of the user'),
+                    'institution_country'	=> new external_value(PARAM_RAW, 'institution_country of the user'),
+                    'gender'    			=> new external_value(PARAM_RAW, 'gender of the user'),
+                    'timemodified'			=> new external_value(PARAM_RAW, 'timemodified of the user')
+                )
+            )
+        );
     }
 
 
@@ -235,21 +237,21 @@ class indes_webservices extends external_api {
 		$sql = "
 			SELECT 
 				c.id,
-				c.idnumber, 
+				c.idnumber,
 				c.fullname,
-				c.shortname, 
-				c.summary, 
+				c.shortname,
+				c.summary,
 				0 as cost,
-				c.timecreated, 
-				c.startdate,  
-				c.startdate as enrolstartdate, 
-				c.startdate as enrolenddate, 
-				c.timemodified, 
-				LEFT(lang, 2) as language,            
+				c.timecreated,
+				c.startdate,
+				c.startdate as enrolstartdate,
+				c.startdate as enrolenddate,
+				c.timemodified,
+				LEFT(lang, 2) as language,
 				(
 					SELECT 
 						count(*)
-					FROM            
+					FROM
 						{$CFG->prefix}role_assignments a,
 						{$CFG->prefix}user u,
 						{$CFG->prefix}context cx
@@ -264,7 +266,7 @@ class indes_webservices extends external_api {
 							(
 								SELECT 
 									enr.deadline
-								FROM            
+								FROM
 									{$CFG->prefix}enrol erl,
 									{$CFG->prefix}enrol_request enr
 								WHERE
@@ -282,7 +284,7 @@ class indes_webservices extends external_api {
 						c.id = cfo.courseid
 						AND cfo.name = 'numsections'
 				) as numsections
-				            
+
 			 FROM 
 				{$CFG->prefix}course c
 			 WHERE 
@@ -297,17 +299,17 @@ class indes_webservices extends external_api {
 
         $outputs = array();
         foreach ($courses as $course) {
-			$output = array();
+            $output = array();
 
-			// Business Rule: Deadline is provided in the Enrollment Request instance.
-			// Exception: Courses without Enrollment Request have the deadline as one day before the start date 
-			if($course->deadline > 0) {
-				$deadline = $course->deadline;
-			} else {
-				$deadline = strtotime("-1 days", $course->startdate);
-			}			
+            // Business Rule: Deadline is provided in the Enrollment Request instance.
+            // Exception: Courses without Enrollment Request have the deadline as one day before the start date 
+            if($course->deadline > 0) {
+                $deadline = $course->deadline;
+            } else {
+                $deadline = strtotime("-1 days", $course->startdate);
+            }
 
-			$output['courseId'] = $course->id;
+            $output['courseId'] = $course->id;
             $output['knaId'] = preg_replace("/[^0-9]/","", $course->idnumber); //only numbers
             $output['name'] = $course->fullname;
             $output['shortname'] = $course->shortname;
@@ -319,16 +321,16 @@ class indes_webservices extends external_api {
             $output['published_date'] = $course->enrolstartdate;
             $output['deadline_date'] = $deadline;
             $output['duration'] = $course->numsections * HOURS_PER_WEEK;
-			$output['last_modified_timestamp'] = $course->timemodified;
-			$output['language'] = $course->language;
-			$output['total_registrations'] = $course->total_registrations;
+            $output['last_modified_timestamp'] = $course->timemodified;
+            $output['language'] = $course->language;
+            $output['total_registrations'] = $course->total_registrations;
 
-			$outputs[] = $output;
+            $outputs[] = $output;
         }
 
         $courses->close();
 
-		return $outputs;
+        return $outputs;
     }
 
 
@@ -357,7 +359,7 @@ class indes_webservices extends external_api {
 					'total_registrations'		=> new external_value(PARAM_NUMBER, 'Total number of active registrations in this course'),
 				)
 			)
-		);		
+		);
     }
 
 
@@ -393,7 +395,7 @@ class indes_webservices extends external_api {
 				c.startdate as enrolstartdate, 
 				c.startdate as enrolenddate, 
 				c.timemodified, 
-				LEFT(lang, 2) as language,            
+				LEFT(lang, 2) as language,
 				(
 					SELECT 
 						count(*)
@@ -412,7 +414,7 @@ class indes_webservices extends external_api {
 							(
 								SELECT 
 									enr.deadline
-								FROM            
+								FROM
 									{$CFG->prefix}enrol erl,
 									{$CFG->prefix}enrol_request enr
 								WHERE
@@ -430,7 +432,7 @@ class indes_webservices extends external_api {
 						c.id = cfo.courseid
 						AND cfo.name = 'numsections'
 				) as numsections
-				            
+
 			 FROM 
 				{$CFG->prefix}course c
 			 WHERE 
@@ -447,17 +449,17 @@ class indes_webservices extends external_api {
 
         foreach ($courses as $course) {
 
-			$output = array();
+            $output = array();
 
-			// Business Rule: Deadline is provided in the Enrollment Request instance.
-			// Exception: Courses without Enrollment Request have the deadline as one day before the start date 
-			if($course->deadline > 0) {
-				$deadline = $course->deadline;
-			} else {
-				$deadline = strtotime("-1 days", $course->startdate);
-			}
+            // Business Rule: Deadline is provided in the Enrollment Request instance.
+            // Exception: Courses without Enrollment Request have the deadline as one day before the start date 
+            if($course->deadline > 0) {
+                $deadline = $course->deadline;
+            } else {
+                $deadline = strtotime("-1 days", $course->startdate);
+            }
 
-			$output['courseId'] = $course->id;
+            $output['courseId'] = $course->id;
             $output['knaId'] = preg_replace("/[^0-9]/","", $course->idnumber); //only numbers
             $output['name'] = $course->fullname;
             $output['comments'] = $course->summary;
@@ -468,16 +470,16 @@ class indes_webservices extends external_api {
             $output['published_date'] = $course->enrolstartdate;
             $output['deadline_date'] = $deadline;
             $output['duration'] = $course->numsections * HOURS_PER_WEEK;
-			$output['last_modified_timestamp'] = $course->timemodified;
-			$output['language'] = $course->language;
-			$output['total_registrations'] = $course->total_registrations;
+            $output['last_modified_timestamp'] = $course->timemodified;
+            $output['language'] = $course->language;
+            $output['total_registrations'] = $course->total_registrations;
 
-			$outputs[] = $output;
+            $outputs[] = $output;
         }
 
         $courses->close();
 
-		return $outputs;
+        return $outputs;
     }
 
 
@@ -532,24 +534,24 @@ class indes_webservices extends external_api {
      */
     public static function enrol_student($email, $courseid) {
         global $DB, $CFG;
-		
-		require_once($CFG->dirroot.'/enrol/manual/externallib.php');
-		
-		$student_role_shortname = 'student';
-		
+
+        require_once($CFG->dirroot.'/enrol/manual/externallib.php');
+
+        $student_role_shortname = 'student';
+
         if (!$role = $DB->get_record('role', array('shortname' => $student_role_shortname))) {
-			throw new moodle_exception('indes_webservices_no_student_role', 'indes_webservices', '', $student_role_shortname);
+            throw new moodle_exception('indes_webservices_no_student_role', 'indes_webservices', '', $student_role_shortname);
         }
 
         if (!$course = $DB->get_record('course', array('id' => $courseid))) {
-        	throw new moodle_exception('indes_webservices_course_not_found', 'indes_webservices', '', $courseid);
+            throw new moodle_exception('indes_webservices_course_not_found', 'indes_webservices', '', $courseid);
         }
 
         if (!$user = $DB->get_record('user', array('email' => $email))) {
-        	throw new moodle_exception('indes_webservices_student_email_not_found', 'indes_webservices', '', $email);
+            throw new moodle_exception('indes_webservices_student_email_not_found', 'indes_webservices', '', $email);
         }
 
-		// Manual enrollment method accepts an array of request
+        // Manual enrollment method accepts an array of request
         $enrollments = array();
 
         $enrollment = array();
@@ -596,32 +598,32 @@ class indes_webservices extends external_api {
      */
     public static function unenrol_student($email, $courseid) {
         global $DB, $CFG, $PAGE;
-		
-		require_once($CFG->dirroot.'/enrol/locallib.php');
-		
-		$student_role_shortname = 'student';
-		
+
+        require_once($CFG->dirroot.'/enrol/locallib.php');
+
+        $student_role_shortname = 'student';
+
         if (!$role = $DB->get_record('role', array('shortname' => $student_role_shortname))) {
-			throw new moodle_exception('indes_webservices_no_student_role', 'indes_webservices', '', $student_role_shortname);
+            throw new moodle_exception('indes_webservices_no_student_role', 'indes_webservices', '', $student_role_shortname);
         }
 
         if (!$course = $DB->get_record('course', array('id' => $courseid))) {
-        	throw new moodle_exception('indes_webservices_course_not_found', 'indes_webservices', '', $courseid);
+            throw new moodle_exception('indes_webservices_course_not_found', 'indes_webservices', '', $courseid);
         }
-		
+
         if (!$user = $DB->get_record('user', array('email' => $email))) {
-        	throw new moodle_exception('indes_webservices_student_email_not_found', 'indes_webservices', '', $email);
+            throw new moodle_exception('indes_webservices_student_email_not_found', 'indes_webservices', '', $email);
         }
-		
-		$enrollment_manager = new course_enrolment_manager($PAGE, $course);
-		
-		$user_enrollments = $enrollment_manager->get_user_enrolments($user->id);
-		
-		// Unenroll student from each enrollment method of this course
-		foreach ($user_enrollments as $ue) {
-			$enrollment_manager->unenrol_user($ue);
-		}
-	}	
+
+        $enrollment_manager = new course_enrolment_manager($PAGE, $course);
+
+        $user_enrollments = $enrollment_manager->get_user_enrolments($user->id);
+
+        // Unenroll student from each enrollment method of this course
+        foreach ($user_enrollments as $ue) {
+            $enrollment_manager->unenrol_user($ue);
+        }
+	}
 
 
 	/**
@@ -633,7 +635,7 @@ class indes_webservices extends external_api {
 	}
 
 
-	/**
+    /**
      * Returns List of participants who were droped out from course
      * @return external_function_parameters
      */
@@ -649,10 +651,10 @@ class indes_webservices extends external_api {
      * @return array List of participants droped out since the last synchronization
      */
 	public static function sync_participants_dropout($lastsynctime) {
-		global $CFG, $USER, $DB;
+        global $CFG, $USER, $DB;
         require_once($CFG->dirroot . "/user/lib.php");
 
-		//Parameter validation
+        //Parameter validation
         //REQUIRED
         $params = self::validate_parameters(self::sync_participants_dropout_parameters(),
                 array('lastsynctime' => $lastsynctime));
@@ -676,12 +678,11 @@ class indes_webservices extends external_api {
 				uen.enrolid = enr.id
 				AND enr.courseid = c.id
 				AND ct.instanceid = c.id
-				AND a.contextid = ct.id				
+				AND a.contextid = ct.id
 				AND u.id = a.userid
-				AND uen.userid = u.id				
-				
+				AND uen.userid = u.id
 				AND uen.status = " . USER_ENROL_STATUS_DISABLED . "
-				AND a.timemodified > " . $lastsynctime . "				
+				AND a.timemodified > " . $lastsynctime . "
 				AND a.roleid = " . ROLE_DROPOUT . "
 				AND ct.contextlevel = ". CONTEXT_COURSE;
 
@@ -689,15 +690,15 @@ class indes_webservices extends external_api {
 
 		$users = array();
         foreach ($usersDropedout as $user) {
-			$newUser = array();
-			$newUser['courseId'] = $user->courseid;
+            $newUser = array();
+            $newUser['courseId'] = $user->courseid;
             $newUser['userId'] = $user->userid;
             $newUser['email'] = $user->email;
             $newUser['firstname'] = $user->firstname;
             $newUser['lastname'] = $user->lastname;
             $newUser['timemodified'] = $user->timemodified;
 
-			$users[] = $newUser;
+            $users[] = $newUser;
         }
 
         $usersDropedout->close();
@@ -753,13 +754,13 @@ class indes_webservices extends external_api {
 
 		$sql = "
 			SELECT
-				c.id as courseId,
+                c.id as courseId,
                 u.id as userId,
                 u.email,
                 u.firstname,
                 u.lastname,
                 u.timemodified
-				
+
 				FROM
 					({$CFG->prefix}role_assignments a,
 					{$CFG->prefix}course c,
@@ -769,12 +770,9 @@ class indes_webservices extends external_api {
 				WHERE
 					u.timemodified > " . $lastsynctime . "
 					AND a.roleid = " . ROLE_STUDENT . "
-					
 					AND u.id = a.userid
 					AND u.deleted = 0
-					
 					AND a.contextid = cx.id
-					
 					AND cx.instanceid = c.id
 					AND (c.idnumber <> '' and c.idnumber IS NOT NULL) -- KNA ID
 					AND c.category IN (" . COURSE_CATEGORIES . ")
@@ -785,20 +783,20 @@ class indes_webservices extends external_api {
 
         $users = array();
         foreach ($usersProfileUpdated as $user) {
-			$newUser = array();
-			$newUser['courseId'] = $user->courseid;
+            $newUser = array();
+            $newUser['courseId'] = $user->courseid;
             $newUser['userId'] = $user->userid;
             $newUser['email'] = $user->email;
             $newUser['firstname'] = $user->firstname;
             $newUser['lastname'] = $user->lastname;
             $newUser['timemodified'] = $user->timemodified;
 
-			$users[] = $newUser;
+            $users[] = $newUser;
         }
-		
+
         $usersProfileUpdated->close();
-        
-		return $users;
+
+        return $users;
     }
 
 
@@ -848,12 +846,12 @@ class indes_webservices extends external_api {
 
 		$sql = "
 			SELECT
-				c.id as courseid,
-				u.id as userid,
-				u.firstname,
-				u.lastname,
-				u.email,
-				r.shortname as role,
+             	c.id as courseid,
+             	u.id as userid,
+             	u.firstname,
+             	u.lastname,
+             	u.email,
+             	r.shortname as role,
              	title.data as title,
                 inst_name.data as institution_name,
                 inst_type.data as institution_type,
@@ -870,19 +868,19 @@ class indes_webservices extends external_api {
 				{$CFG->prefix}context ct,
 				{$CFG->prefix}user_enrolments uen,
 				{$CFG->prefix}enrol enr)
-				
+
 				LEFT OUTER JOIN
 					{$CFG->prefix}user_info_data inst_name
 				ON
 					inst_name.userid = u.id
 					AND inst_name.fieldid = " . PROFILE_FIELD_INSTITUTION_NAME . " 
-				
+
 				LEFT OUTER JOIN
 					{$CFG->prefix}user_info_data inst_type
 				ON
 					inst_type.userid = u.id
 					AND inst_type.fieldid = " . PROFILE_FIELD_INSTITUTION_TYPE . " 
-				
+
 				LEFT OUTER JOIN
 					{$CFG->prefix}user_info_data inst_city
 				ON
@@ -894,19 +892,19 @@ class indes_webservices extends external_api {
 				ON
 					inst_country.userid = u.id
 					AND inst_country.fieldid = " . PROFILE_FIELD_INSTITUTION_COUNTRY . "
-				
+
 				LEFT OUTER JOIN
 					{$CFG->prefix}user_info_data title
 				ON
 					title.userid = u.id
 					AND title.fieldid = " . PROFILE_FIELD_INSTITUTION_POSITION . "
-					
+
 				LEFT OUTER JOIN
 					{$CFG->prefix}user_info_data gender
 				ON
 					gender.userid = u.id
 					AND gender.fieldid = " . PROFILE_FIELD_GENDER . "
-					
+
 			WHERE
 				uen.enrolid = enr.id
 				AND enr.courseid = c.id
@@ -915,7 +913,6 @@ class indes_webservices extends external_api {
 				AND a.roleid = r.id
 				AND a.contextid = ct.id
 				AND ct.instanceid = c.id
-				
 				AND c.category IN (" . COURSE_CATEGORIES . ")
 				AND uen.status = " . USER_ENROL_STATUS_ENABLED . "
 				AND a.roleid IN (" . ROLE_COORDINATOR . ", " . ROLE_TUTOR . ")
@@ -929,27 +926,27 @@ class indes_webservices extends external_api {
 
         $users = array();
         foreach ($facilitators as $user) {
-			$newUser = array();
-			$newUser['courseId'] = $user->courseid;
+            $newUser = array();
+            $newUser['courseId'] = $user->courseid;
             $newUser['userId'] = $user->userid;
             $newUser['email'] = $user->email;
             $newUser['firstname'] = $user->firstname;
             $newUser['lastname'] = $user->lastname;
-            $newUser['role'] = $user->role;            
+            $newUser['role'] = $user->role;
             $newUser['title'] = $user->title;
             $newUser['institution_name'] = $user->institution_name;
             $newUser['institution_city'] = $user->institution_city;
             $newUser['institution_country'] = $user->institution_country;
             $newUser['institution_type'] = filterProfileFields(PROFILE_FIELD_INSTITUTION_TYPE, $user->institution_type);
-			$newUser['gender'] = filterProfileFields(PROFILE_FIELD_GENDER, $user->gender);			
-			$newUser['timemodified'] = $user->timemodified;
+            $newUser['gender'] = filterProfileFields(PROFILE_FIELD_GENDER, $user->gender);
+            $newUser['timemodified'] = $user->timemodified;
 
-			$users[] = $newUser;
+            $users[] = $newUser;
         }
 
         $facilitators->close();
 
-		return $users;
+        return $users;
     }
 
 
@@ -962,21 +959,21 @@ class indes_webservices extends external_api {
             new external_single_structure(
                 array(
                     'courseId'    			=> new external_value(PARAM_NUMBER, 'ID of the course'),
-					'userId'    			=> new external_value(PARAM_NUMBER, 'Facilitator\'s ID'),
-					'email'    				=> new external_value(PARAM_RAW, 'Facilitator\'s Email'),
-					'firstname'    			=> new external_value(PARAM_RAW, 'Facilitator\'s First Name'),
-					'lastname'    			=> new external_value(PARAM_RAW, 'Facilitator\'s Last Name'),
-					'role'					=> new external_value(PARAM_RAW, 'Facilitator\'s Role'),
-					'title'					=> new external_value(PARAM_RAW, 'Facilitator\'s Title'),
-					'institution_name'		=> new external_value(PARAM_RAW, 'Name of the institution that the Facilitator belongs to'),
-					'institution_city'		=> new external_value(PARAM_RAW, 'City of the institution that the Facilitator belongs to'),
-					'institution_country'	=> new external_value(PARAM_RAW, 'Country of the institution that the Facilitator belongs to'),
-					'institution_type'		=> new external_value(PARAM_RAW, 'Type of the institution that the Facilitator belongs to'),
-					'gender'    			=> new external_value(PARAM_RAW, 'Facilitator\'s gender'),					
-					'timemodified'    		=> new external_value(PARAM_RAW, 'Time when the facilitator was assigned to the course')
-				)
-			)
-		);
+                    'userId'    			=> new external_value(PARAM_NUMBER, 'Facilitator\'s ID'),
+                    'email'    				=> new external_value(PARAM_RAW, 'Facilitator\'s Email'),
+                    'firstname'    			=> new external_value(PARAM_RAW, 'Facilitator\'s First Name'),
+                    'lastname'    			=> new external_value(PARAM_RAW, 'Facilitator\'s Last Name'),
+                    'role'					=> new external_value(PARAM_RAW, 'Facilitator\'s Role'),
+                    'title'					=> new external_value(PARAM_RAW, 'Facilitator\'s Title'),
+                    'institution_name'		=> new external_value(PARAM_RAW, 'Name of the institution that the Facilitator belongs to'),
+                    'institution_city'		=> new external_value(PARAM_RAW, 'City of the institution that the Facilitator belongs to'),
+                    'institution_country'	=> new external_value(PARAM_RAW, 'Country of the institution that the Facilitator belongs to'),
+                    'institution_type'		=> new external_value(PARAM_RAW, 'Type of the institution that the Facilitator belongs to'),
+                    'gender'    			=> new external_value(PARAM_RAW, 'Facilitator\'s gender'),					
+                    'timemodified'    		=> new external_value(PARAM_RAW, 'Time when the facilitator was assigned to the course')
+                )
+            )
+        );
     }
 
 
@@ -1014,13 +1011,13 @@ class indes_webservices extends external_api {
 			throw new moodle_exception('limesurvey_user_not_found', 'indes_webservices', '', $userid);
 		}
 
-        $course = $DB->get_record('course', array('id'=> $limesurvey->course), '*', MUST_EXIST);
+		$course = $DB->get_record('course', array('id'=> $limesurvey->course), '*', MUST_EXIST);
 
 		$completion_info = new completion_info($course);
 
 		$params = array('userid'=>$userid, 'surveyid'=>$limesurvey->id);
 
-        $cm = get_coursemodule_from_instance('limesurvey', $limesurvey->id, 0, false, MUST_EXIST);	
+        $cm = get_coursemodule_from_instance('limesurvey', $limesurvey->id, 0, false, MUST_EXIST);
 
 		if($completion_info->is_enabled($cm) && !$DB->record_exists('limesurvey_tracking', $params)){
 
@@ -1072,22 +1069,22 @@ class indes_webservices extends external_api {
 
 		require_once($CFG->dirroot . "/grade/lib.php");
 		require_once($CFG->dirroot . "/grade/querylib.php");
-		
+
 		$userid = $DB->get_field('user', 'id', array('email' => $email));
-		
+
 		$result_grade = grade_get_course_grade($userid, $courseid);
 
 		$final_grade = $result_grade->grade;
-		
+
 		$user_grade = array();
 		$grade = array();
 		$grade['email'] = $email;
 		$grade['userId'] = $userid;
 		$grade['courseId'] = $courseid;
 		$grade['final_grade'] = $final_grade;
-			
+
 		$user_grade[] = $grade;
-		
+
 		return $user_grade;
 	}
 
@@ -1100,13 +1097,13 @@ class indes_webservices extends external_api {
         return new external_multiple_structure(
             new external_single_structure(
                 array(
-					'email'    		=> new external_value(PARAM_RAW, 'Email of the user'),
-					'userId'    	=> new external_value(PARAM_NUMBER, 'ID of the user'),
-					'courseId'    	=> new external_value(PARAM_NUMBER, 'ID of the course'),	
+                    'email'    		=> new external_value(PARAM_RAW, 'Email of the user'),
+                    'userId'    	=> new external_value(PARAM_NUMBER, 'ID of the user'),
+                    'courseId'    	=> new external_value(PARAM_NUMBER, 'ID of the course'),
                     'final_grade'   => new external_value(PARAM_NUMBER, 'final grade of the user')
-				)
-			)
-		);
+                )
+            )
+        );
     }
 
 
@@ -1135,7 +1132,7 @@ class indes_webservices extends external_api {
 
         require_once($CFG->dirroot . "/grade/lib.php");
         require_once($CFG->dirroot . "/grade/querylib.php");
-        
+
         $users_enrolled = get_enrolled_users(context_course::instance($courseid));
 
         $users_in_course = array();
@@ -1144,18 +1141,18 @@ class indes_webservices extends external_api {
         }
 
         $result_grades = grade_get_course_grades($courseid,$users_in_course);
-        
+
         $grades = array();
         foreach($result_grades->grades as $key => $value) {
             $newUser = array();
             $newUser['userId'] = $key;
             $newUser['final_grade'] = $value->grade;
-            
+
             $grades[] = $newUser;
         }
 
         return $grades;
-    }    
+    }
 
 
     /**
@@ -1207,13 +1204,13 @@ class indes_webservices extends external_api {
 			$users_in_course[$users->id]['courseId'] = $courseid;
 			$users_in_course[$users->id]['userId'] = $users->id;
 			$users_in_course[$users->id]['email'] = $users->email;
-			
+
 			$result_grades = grade_get_course_grades($courseid,$users->id);
 
 			foreach($result_grades->grades as $key => $value) {
 				$users_in_course[$users->id]['final_grade'] = $value->grade;
 			}
-			
+
 			$sql = "
 				SELECT 
 					course as Course_Id,
@@ -1300,9 +1297,9 @@ class indes_webservices extends external_api {
 			GROUP BY trackid, userid, fullname, email, name, attempt
 			ORDER BY email
 			";
-		
+
 			$scorm_result = $DB->get_recordset_sql($sql);
-		
+
 			$users_in_course[$users->id]['scorms'] = array();
 			foreach ($scorm_result as $h) {
 				$scorms_count++;
@@ -1338,7 +1335,7 @@ class indes_webservices extends external_api {
 												'completionscorerequired'  	=> new external_value(PARAM_RAW, 'The name of the preference'),
 												'value'  					=> new external_value(PARAM_RAW, 'The name of the preference')
 											)
-										), 'User preferences', VALUE_OPTIONAL),					
+										), 'User preferences', VALUE_OPTIONAL),
                     'final_grade'   => new external_value(PARAM_NUMBER, 'final grade of the user')
                 )
             )
@@ -1366,47 +1363,115 @@ class indes_webservices extends external_api {
     public static function get_grades_participant_category($categoryid) {
         global $CFG, $USER, $DB;
         require_once($CFG->dirroot . "/user/lib.php");
-		
+
 		$sql = "
 				SELECT
 					c.id as course_id,
 					c.category,
+					CASE
+						WHEN (SELECT mcd.value FROM {$CFG->prefix}customfield_data mcd WHERE mcd.instanceid = c.id AND mcd.fieldid = (SELECT mcf.id FROM {$CFG->prefix}customfield_field mcf WHERE shortname = 'coursetype')) = 1 THEN 'Tutor'
+						WHEN (SELECT mcd.value FROM {$CFG->prefix}customfield_data mcd WHERE mcd.instanceid = c.id AND mcd.fieldid = (SELECT mcf.id FROM {$CFG->prefix}customfield_field mcf WHERE shortname = 'coursetype')) = 2 THEN 'Self-paced'
+						WHEN (SELECT mcd.value FROM {$CFG->prefix}customfield_data mcd WHERE mcd.instanceid = c.id AND mcd.fieldid = (SELECT mcf.id FROM {$CFG->prefix}customfield_field mcf WHERE shortname = 'coursetype')) = 3 THEN 'Face to Face'
+						WHEN (SELECT mcd.value FROM {$CFG->prefix}customfield_data mcd WHERE mcd.instanceid = c.id AND mcd.fieldid = (SELECT mcf.id FROM {$CFG->prefix}customfield_field mcf WHERE shortname = 'coursetype')) = 4 THEN 'Synchronous-online'
+						WHEN (SELECT mcd.value FROM {$CFG->prefix}customfield_data mcd WHERE mcd.instanceid = c.id AND mcd.fieldid = (SELECT mcf.id FROM {$CFG->prefix}customfield_field mcf WHERE shortname = 'coursetype')) = 5 THEN 'Open Educational Resources'
+						WHEN (SELECT mcd.value FROM {$CFG->prefix}customfield_data mcd WHERE mcd.instanceid = c.id AND mcd.fieldid = (SELECT mcf.id FROM {$CFG->prefix}customfield_field mcf WHERE shortname = 'coursetype')) = 6 THEN 'Communities'
+						WHEN (SELECT mcd.value FROM {$CFG->prefix}customfield_data mcd WHERE mcd.instanceid = c.id AND mcd.fieldid = (SELECT mcf.id FROM {$CFG->prefix}customfield_field mcf WHERE shortname = 'coursetype')) = 7 THEN 'Certifications'	
+					END AS course_type,
 					c.idnumber,
 					c.shortname AS shortname,
 					c.fullname AS fullname,
+					c.lang,
 					c.startdate,
 					c.enddate,
 					(
-						SELECT
-							MAX(cert.printhours)
-						FROM
-							{$CFG->prefix}certificate cert
-						WHERE
-							cert.course = c.id
-					) as credithours,
-					(
-						SELECT 
-							value
-						FROM 
-							{$CFG->prefix}course_format_options cfo
-						WHERE
-							c.id = cfo.courseid
-							AND cfo.name = 'numsections'
-					) as numsections,
+						SELECT MAX(cert.printhours)
+						FROM {$CFG->prefix}certificate cert
+						WHERE cert.course = c.id
+					) AS credithours,
 					u.id AS user_id,
-					u.firstname AS firstname, 
-					u.lastname AS lastname, 
 					u.email AS email,
-					u.lastip,
+					mul.timeaccess as UnixUser_LastAccess,
+					mul.timeaccess as User_LastAccess,
+					CASE
+						WHEN mul.timeaccess < c.startdate THEN 'I'
+						WHEN mul.timeaccess >= c.startdate THEN 'A'
+					END as User_Status,
 					ra.roleid,
 					ra.timemodified,
 					COALESCE(ROUND(gg.finalgrade,2),0) as finalgrade,
-					u.country,					
-					(SELECT d_inst.data FROM {$CFG->prefix}user_info_data d_inst WHERE d_inst.fieldid = 15 AND d_inst.userid = u.id) as gender,
-					(SELECT d_inst.data FROM {$CFG->prefix}user_info_data d_inst WHERE d_inst.fieldid = 6 AND d_inst.userid = u.id) as highest_degree,
-					(SELECT d_inst.data FROM {$CFG->prefix}user_info_data d_inst WHERE d_inst.fieldid = 7 AND d_inst.userid = u.id) as institution,
-					(SELECT d_inst.data FROM {$CFG->prefix}user_info_data d_inst WHERE d_inst.fieldid = 20 AND d_inst.userid = u.id) as institution_type
-					FROM {$CFG->prefix}role_assignments ra 
+					u.country,
+					(SELECT d_inst.data FROM {$CFG->prefix}user_info_data d_inst WHERE d_inst.fieldid = 15 AND d_inst.userid = u.id) AS gender,
+					(SELECT d_inst.data FROM {$CFG->prefix}user_info_data d_inst WHERE d_inst.fieldid = 6 AND d_inst.userid = u.id) AS highest_degree,
+					(SELECT d_inst.data FROM {$CFG->prefix}user_info_data d_inst WHERE d_inst.fieldid = 7 AND d_inst.userid = u.id) AS institution,
+					(SELECT d_inst.data FROM {$CFG->prefix}user_info_data d_inst WHERE d_inst.fieldid = 20 AND d_inst.userid = u.id) AS institution_type
+				FROM 
+					{$CFG->prefix}role_assignments ra 
+					JOIN {$CFG->prefix}user u ON u.id = ra.userid
+					JOIN {$CFG->prefix}role r ON r.id = ra.roleid
+					JOIN {$CFG->prefix}context ct ON ct.id = ra.contextid
+					JOIN {$CFG->prefix}course c ON c.id = ct.instanceid
+					LEFT JOIN {$CFG->prefix}user_lastaccess mul ON ct.instanceid = mul.courseid
+					LEFT JOIN
+					(
+						SELECT
+							u.id AS userid,
+							c.id AS courseid,
+							g.finalgrade AS finalgrade
+						FROM 
+							{$CFG->prefix}user u
+						JOIN {$CFG->prefix}grade_grades g ON g.userid = u.id
+						JOIN {$CFG->prefix}grade_items gi ON g.itemid =  gi.id
+						JOIN {$CFG->prefix}course c ON c.id = gi.courseid
+						WHERE 
+							gi.itemtype = 'course'
+					) gg ON gg.userid = u.id AND gg.courseid = c.id
+					LEFT JOIN {$CFG->prefix}course_categories cca ON c.category = cca.id
+				WHERE
+					ct.contextlevel = 50
+					AND (ra.roleid = " . ROLE_STUDENT . " OR ra.roleid = " . ROLE_DROPOUT . ")
+					AND mul.userid = ra.userid
+					AND cca.id IN ($categoryid)
+
+				UNION
+
+				SELECT
+					c.id as course_id,
+					c.category,
+					CASE
+						WHEN (SELECT mcd.value FROM {$CFG->prefix}customfield_data mcd WHERE mcd.instanceid = c.id AND mcd.fieldid = (SELECT mcf.id FROM {$CFG->prefix}customfield_field mcf WHERE shortname = 'coursetype')) = 1 THEN 'Tutor'
+						WHEN (SELECT mcd.value FROM {$CFG->prefix}customfield_data mcd WHERE mcd.instanceid = c.id AND mcd.fieldid = (SELECT mcf.id FROM {$CFG->prefix}customfield_field mcf WHERE shortname = 'coursetype')) = 2 THEN 'Self-paced'
+						WHEN (SELECT mcd.value FROM {$CFG->prefix}customfield_data mcd WHERE mcd.instanceid = c.id AND mcd.fieldid = (SELECT mcf.id FROM {$CFG->prefix}customfield_field mcf WHERE shortname = 'coursetype')) = 3 THEN 'Face to Face'
+						WHEN (SELECT mcd.value FROM {$CFG->prefix}customfield_data mcd WHERE mcd.instanceid = c.id AND mcd.fieldid = (SELECT mcf.id FROM {$CFG->prefix}customfield_field mcf WHERE shortname = 'coursetype')) = 4 THEN 'Synchronous-online'
+						WHEN (SELECT mcd.value FROM {$CFG->prefix}customfield_data mcd WHERE mcd.instanceid = c.id AND mcd.fieldid = (SELECT mcf.id FROM {$CFG->prefix}customfield_field mcf WHERE shortname = 'coursetype')) = 5 THEN 'Open Educational Resources'
+						WHEN (SELECT mcd.value FROM {$CFG->prefix}customfield_data mcd WHERE mcd.instanceid = c.id AND mcd.fieldid = (SELECT mcf.id FROM {$CFG->prefix}customfield_field mcf WHERE shortname = 'coursetype')) = 6 THEN 'Communities'
+						WHEN (SELECT mcd.value FROM {$CFG->prefix}customfield_data mcd WHERE mcd.instanceid = c.id AND mcd.fieldid = (SELECT mcf.id FROM {$CFG->prefix}customfield_field mcf WHERE shortname = 'coursetype')) = 7 THEN 'Certifications'	
+					END AS course_type,
+					c.idnumber,
+					c.shortname AS shortname,
+					c.fullname AS fullname,
+					c.lang,
+					c.startdate,
+					c.enddate,
+					(
+						SELECT MAX(cert.printhours)
+						FROM {$CFG->prefix}certificate cert
+						WHERE cert.course = c.id
+					) AS credithours,
+					u.id AS user_id,
+					u.email AS email,
+					'' as UnixUser_LastAccess,
+					'' as User_LastAccess,
+					'N' as User_Status,
+					ra.roleid,
+					ra.timemodified,
+					COALESCE(ROUND(gg.finalgrade,2),0) as finalgrade,
+					u.country,
+					(SELECT d_inst.data FROM {$CFG->prefix}user_info_data d_inst WHERE d_inst.fieldid = 15 AND d_inst.userid = u.id) AS gender,
+					(SELECT d_inst.data FROM {$CFG->prefix}user_info_data d_inst WHERE d_inst.fieldid = 6 AND d_inst.userid = u.id) AS highest_degree,
+					(SELECT d_inst.data FROM {$CFG->prefix}user_info_data d_inst WHERE d_inst.fieldid = 7 AND d_inst.userid = u.id) AS institution,
+					(SELECT d_inst.data FROM {$CFG->prefix}user_info_data d_inst WHERE d_inst.fieldid = 20 AND d_inst.userid = u.id) AS institution_type
+				FROM 
+					{$CFG->prefix}role_assignments ra 
 					JOIN {$CFG->prefix}user u ON u.id = ra.userid
 					JOIN {$CFG->prefix}role r ON r.id = ra.roleid
 					JOIN {$CFG->prefix}context ct ON ct.id = ra.contextid
@@ -1414,74 +1479,108 @@ class indes_webservices extends external_api {
 					LEFT JOIN
 					(
 						SELECT
-							u.id AS userid,c.id as courseid,
+							u.id AS userid,
+							c.id AS courseid,
 							g.finalgrade AS finalgrade
-						FROM {$CFG->prefix}user u
+						FROM 
+							{$CFG->prefix}user u
 						JOIN {$CFG->prefix}grade_grades g ON g.userid = u.id
 						JOIN {$CFG->prefix}grade_items gi ON g.itemid =  gi.id
-						JOIN {$CFG->prefix}course c ON c.id = gi.courseid where gi.itemtype = 'course'
-					) gg ON gg.userid = u.id and gg.courseid = c.id
-					LEFT JOIN {$CFG->prefix}course_categories cca ON c.category = cca.id
-					WHERE
-					ct.contextlevel = 50
-					AND (ra.roleid = " . ROLE_STUDENT . " OR ra.roleid = " . ROLE_DROPOUT . ")
-					AND cca.id IN ($categoryid)
-					";
-					//AND (cca.id = $categoryid OR cca.parent = $categoryid OR cca.path like '%/$categoryid/%')
+						JOIN {$CFG->prefix}course c ON c.id = gi.courseid
+						WHERE 
+							gi.itemtype = 'course'
+					) gg ON gg.userid = u.id AND gg.courseid = c.id
+				LEFT JOIN {$CFG->prefix}course_categories cca ON c.category = cca.id
+			WHERE
+				ct.contextlevel = 50
+				AND (ra.roleid = " . ROLE_STUDENT . " OR ra.roleid = " . ROLE_DROPOUT . ")
+				AND ra.userid not in (select mul.userid from {$CFG->prefix}user_lastaccess mul where mul.courseid = c.id and mul.userid = ra.userid)
+				AND cca.id IN ($categoryid)
+			";
+			/* This section was part of the SELECT, Change made 3/1/2023
+					u.firstname AS firstname, 
+					u.lastname AS lastname, 
+					u.lastip,
+					(
+						SELECT 
+							cfo.value
+						FROM 
+							{$CFG->prefix}course_format_options cfo
+						WHERE
+							c.id = cfo.courseid
+							AND cfo.name = 'numsections'
+					) as numsections,
+			*/
+			//AND (cca.id = $categoryid OR cca.parent = $categoryid OR cca.path like '%/$categoryid/%')
+
 
 		$participants = $DB->get_recordset_sql($sql);
-		
+
         $registrations = array();
-		
+
         foreach ($participants as $participant) {
 
-			$registration = array();
+            //Calculo nuevo para mostrar el porcentaje de un usuario en un curso 2/14/2023
+            /*$course_info = get_course($participant->course_id);
 
-			$fecha_inicio = date_create();
-			$fecha_inicio = date_timestamp_set($fecha_inicio, $participant->startdate);
+            $completion = new \completion_info($course_info);
 
-			$fecha_fin = date_create();
-			$fecha_fin = date_timestamp_set($fecha_fin, $participant->enddate);
+            $percentage = core_completion\progress::get_course_progress_percentage($course_info, $participant->user_id);
+            if (!is_null($percentage)) {
+                $percentage = round($percentage, 2);
+            }*/
+            //Calculo nuevo para mostrar el porcentaje de un usuario en un curso 2/14/2023
 
-			$diff_fecha_inicio_fin = date_diff($fecha_inicio,$fecha_fin);
-			
-			$idnumber = explode("|", $participant->idnumber);
+            $registration = array();
 
-			$registration['courseid'] = $participant->course_id;
-			$registration['categoryid'] = $participant->category;
-			$registration['item'] = $idnumber[0];
-			$registration['offering'] = $idnumber[1];            
-			$registration['shortname'] = $participant->shortname;
-			$registration['name'] = $participant->fullname;
+            $fecha_inicio = date_create();
+            $fecha_inicio = date_timestamp_set($fecha_inicio, $participant->startdate);
+
+            $fecha_fin = date_create();
+            $fecha_fin = date_timestamp_set($fecha_fin, $participant->enddate);
+
+            $diff_fecha_inicio_fin = date_diff($fecha_inicio,$fecha_fin);
+
+            $idnumber = explode("|", $participant->idnumber);
+
+            $registration['courseid'] = $participant->course_id;
+            $registration['categoryid'] = $participant->category;
+            $registration['course_type'] = $participant->course_type;
+            $registration['item'] = $idnumber[0];
+            $registration['offering'] = $idnumber[1];
+            $registration['shortname'] = $participant->shortname;
+            $registration['name'] = $participant->fullname;
+            $registration['lang'] = $participant->lang;
             $registration['start_date'] = date('Y-m-d H:i:s', $participant->startdate);
             $registration['end_date'] = date('Y-m-d H:i:s', $participant->enddate);
-			$registration['calculated_end_date'] = date('Y-m-d H:i:s', strtotime("+" . $participant->numsections . " weeks", $participant->startdate));
+            //$registration['calculated_end_date'] = date('Y-m-d H:i:s', strtotime("+" . $participant->numsections . " weeks", $participant->startdate));
             $registration['credithours'] = $participant->credithours;
-            $registration['calculated_credithours'] = ($diff_fecha_inicio_fin->format("%R%a")/7)*10;
-            $registration['numsections'] = $participant->numsections;
+            //$registration['calculated_credithours'] = ($diff_fecha_inicio_fin->format("%R%a")/7)*10;
+            //$registration['numsections'] = $participant->numsections;
             $registration['userid'] = $participant->user_id;
-            $registration['firstname'] = $participant->firstname;
-            $registration['lastname'] = $participant->lastname;
+            //$registration['firstname'] = $participant->firstname;
+            //$registration['lastname'] = $participant->lastname;
             $registration['email'] = $participant->email;
-			$registration['lastip'] = $participant->lastip;
+            $registration['unixuser_lastaccess'] = $participant->unixuser_lastaccess;
+            $registration['user_lastaccess'] = ($participant->unixuser_lastaccess != '' ? date('Y-m-d H:i:s', $participant->unixuser_lastaccess) : '');
+            $registration['user_status'] = $participant->user_status;
+            //$registration['percentage'] = $percentage;
+            //$registration['lastip'] = $participant->lastip;
             $registration['roleid'] = $participant->roleid;
             $registration['timemodified'] = date('Y-m-d H:i:s', $participant->timemodified);
             $registration['finalgrade'] = $participant->finalgrade;
-			//$registration['nacionality'] = $participant->nacionality;
-            //$registration['institution_country'] = $participant->country_work;
-			//$registration['country'] = $participant->country;
-			$registration['country'] = filterProfileFields(PROFILE_COUNTRY, $participant->country);
-			$registration['gender'] = filterProfileFields(PROFILE_FIELD_GENDER, $participant->gender);
-			$registration['degree'] = filterProfileFields(PROFILE_FIELD_HIGHEST_DEGREE, $participant->highest_degree);
+            $registration['country'] = filterProfileFields(PROFILE_COUNTRY, $participant->country);
+            $registration['gender'] = filterProfileFields(PROFILE_FIELD_GENDER, $participant->gender);
+            $registration['degree'] = filterProfileFields(PROFILE_FIELD_HIGHEST_DEGREE, $participant->highest_degree);
             $registration['institution_name'] = $participant->institution;
             $registration['institution_type'] = filterProfileFields(PROFILE_FIELD_INSTITUTION_TYPE, $participant->institution_type);
 
-			$registrations[] = $registration;
+            $registrations[] = $registration;
         }
 
         $participants->close();
-		
-		return $registrations;
+
+        return $registrations;
     }
 
 
@@ -1494,30 +1593,34 @@ class indes_webservices extends external_api {
             new external_single_structure(
                 array(
                     'courseid'    			=> new external_value(PARAM_NUMBER, 'ID of the course'),
-                    'categoryid'    		=> new external_value(PARAM_NUMBER, 'ID of the category ourse'),
+                    'categoryid'    		=> new external_value(PARAM_NUMBER, 'ID of the category course'),
+					'course_type'    		=> new external_value(PARAM_RAW, 'Type of course'),
 					'item'    				=> new external_value(PARAM_RAW, 'SuccessFactors Item ID Number'),
 					'offering' 				=> new external_value(PARAM_RAW, 'SuccessFactors Offering ID Number'),
 					'shortname'    			=> new external_value(PARAM_RAW, 'Short Name of the course'),
 					'name'    				=> new external_value(PARAM_RAW, 'Full Name of the course'),
+					'lang'    				=> new external_value(PARAM_RAW, 'Language of the course'),
 					'start_date'			=> new external_value(PARAM_RAW, 'Date when the course will start'),
 					'end_date'				=> new external_value(PARAM_RAW, 'Moodle date when the course will end'),
-					'calculated_end_date'	=> new external_value(PARAM_RAW, 'Calculated date when the course will end'),
+					//'calculated_end_date'	=> new external_value(PARAM_RAW, 'Calculated date when the course will end'),
 					'credithours'			=> new external_value(PARAM_RAW, 'Moodle credit housrs of the course'),
-					'calculated_credithours'=> new external_value(PARAM_RAW, 'Calculated credit housrs of the course based on the calculated end date'),
-                    'numsections'    		=> new external_value(PARAM_NUMBER, 'Course num of sections'),			
+					//'calculated_credithours'=> new external_value(PARAM_RAW, 'Calculated credit housrs of the course based on the calculated end date'),
+					//'numsections'    		=> new external_value(PARAM_NUMBER, 'Course num of sections'),
 					'userid'    			=> new external_value(PARAM_NUMBER, 'User\'s ID'),
-					'firstname'    			=> new external_value(PARAM_RAW, 'User\'s First Name'),
-					'lastname'    			=> new external_value(PARAM_RAW, 'User\'s Last Name'),
+					//'firstname'    			=> new external_value(PARAM_RAW, 'User\'s First Name'),
+					//'lastname'    			=> new external_value(PARAM_RAW, 'User\'s Last Name'),
 					'email'    				=> new external_value(PARAM_RAW, 'User\'s Email'),
-					'lastip'    			=> new external_value(PARAM_RAW, 'User\'s Last IP'),					
+					'unixuser_lastaccess'	=> new external_value(PARAM_RAW, 'Unix date when the user accessed the last time to the course'),
+					'user_lastaccess'		=> new external_value(PARAM_RAW, 'Human date when the user accessed the last time to the course'),
+					'user_status'  			=> new external_value(PARAM_RAW, 'User Last Access Status'),
+					//'percentage'  			=> new external_value(PARAM_NUMBER, 'Participant percentage course completed'),
+					//'lastip'    			=> new external_value(PARAM_RAW, 'User\'s Last IP'),
 					'roleid'				=> new external_value(PARAM_RAW, 'User\'s role ID'),
 					'timemodified'    		=> new external_value(PARAM_RAW, 'Time when the users was enrolled to the course'),
 					'finalgrade'			=> new external_value(PARAM_NUMBER, 'Final grade in the course'),
-					//'nacionality'			=> new external_value(PARAM_RAW, 'User\'s nacionality'),
-					//'institution_country'	=> new external_value(PARAM_RAW, 'Country of the institution that the Facilitator belongs to'),
-					'country'				=> new external_value(PARAM_RAW, 'Participant\'s Country'),					
+					'country'				=> new external_value(PARAM_RAW, 'Participant\'s Country'),
 					'gender'    			=> new external_value(PARAM_RAW, 'User\'s gender'),
-					'degree'    			=> new external_value(PARAM_RAW, 'User\'s degree'),					
+					'degree'    			=> new external_value(PARAM_RAW, 'User\'s degree'),
 					'institution_name'		=> new external_value(PARAM_RAW, 'Name of the institution that the Facilitator belongs to'),
 					'institution_type'		=> new external_value(PARAM_RAW, 'Type of the institution that the Facilitator belongs to')
 				)
@@ -1525,6 +1628,798 @@ class indes_webservices extends external_api {
 		);
     }
 
+
+    /**
+     * Get the enrolled & dropout participants with their grade from a category (courses)
+     * @return external_function_parameters
+     */
+    public static function get_nameless_grades_participant_category_parameters() {
+        return new external_function_parameters(
+            array(
+                    'categoryid'  => new external_value(PARAM_RAW, 'IDs of Moodle categories, separated by comma'),
+					'startdate'  => new external_value(PARAM_INT, 'Start date of courses to filter')
+                )
+        );
+    }
+
+    /**
+    * Get the enrolled & dropout participants (without firstname & lastname) with their grade from a category (courses)
+    * @param int $categoryid Category ID
+    */
+	public static function get_nameless_grades_participant_category($categoryid, $startdate = NULL) {
+        global $CFG, $USER, $DB;
+        require_once($CFG->dirroot . "/user/lib.php");
+
+        //Parameter validation
+        //REQUIRED
+        $params = self::validate_parameters(self::get_nameless_grades_participant_category_parameters(),
+                array('categoryid' => $categoryid, 'startdate' => $startdate));
+
+		$sql = "
+				SELECT
+					c.id AS course_id,
+					c.category,
+					CASE
+						WHEN (SELECT mcd.value FROM {$CFG->prefix}customfield_data mcd WHERE mcd.instanceid = c.id AND mcd.fieldid = (SELECT mcf.id FROM {$CFG->prefix}customfield_field mcf WHERE shortname = 'coursetype')) = 1 THEN 'Tutor'
+						WHEN (SELECT mcd.value FROM {$CFG->prefix}customfield_data mcd WHERE mcd.instanceid = c.id AND mcd.fieldid = (SELECT mcf.id FROM {$CFG->prefix}customfield_field mcf WHERE shortname = 'coursetype')) = 2 THEN 'Self-paced'
+						WHEN (SELECT mcd.value FROM {$CFG->prefix}customfield_data mcd WHERE mcd.instanceid = c.id AND mcd.fieldid = (SELECT mcf.id FROM {$CFG->prefix}customfield_field mcf WHERE shortname = 'coursetype')) = 3 THEN 'Face to Face'
+						WHEN (SELECT mcd.value FROM {$CFG->prefix}customfield_data mcd WHERE mcd.instanceid = c.id AND mcd.fieldid = (SELECT mcf.id FROM {$CFG->prefix}customfield_field mcf WHERE shortname = 'coursetype')) = 4 THEN 'Synchronous-online'
+						WHEN (SELECT mcd.value FROM {$CFG->prefix}customfield_data mcd WHERE mcd.instanceid = c.id AND mcd.fieldid = (SELECT mcf.id FROM {$CFG->prefix}customfield_field mcf WHERE shortname = 'coursetype')) = 5 THEN 'Open Educational Resources'
+						WHEN (SELECT mcd.value FROM {$CFG->prefix}customfield_data mcd WHERE mcd.instanceid = c.id AND mcd.fieldid = (SELECT mcf.id FROM {$CFG->prefix}customfield_field mcf WHERE shortname = 'coursetype')) = 6 THEN 'Communities'
+						WHEN (SELECT mcd.value FROM {$CFG->prefix}customfield_data mcd WHERE mcd.instanceid = c.id AND mcd.fieldid = (SELECT mcf.id FROM {$CFG->prefix}customfield_field mcf WHERE shortname = 'coursetype')) = 7 THEN 'Certifications'	
+					END AS course_type,
+					c.idnumber,
+					c.shortname AS shortname,
+					c.fullname AS fullname,
+					c.startdate,
+					c.enddate,
+					c.lang,
+					(
+						SELECT MAX(cert.printhours)
+						FROM {$CFG->prefix}certificate cert
+						WHERE cert.course = c.id
+					) AS credithours,
+					u.id AS user_id,
+					u.email AS email,
+					mul.timeaccess AS UnixUser_LastAccess,
+					mul.timeaccess AS User_LastAccess,
+					CASE
+						WHEN mul.timeaccess < c.startdate THEN 'I'
+						WHEN mul.timeaccess >= c.startdate THEN 'A'
+					END AS User_Status,
+					u.lastip,
+					ra.roleid,
+					ra.timemodified,
+					COALESCE(ROUND(gg.finalgrade,2),0) AS finalgrade,
+					u.country,
+					(SELECT d_inst.data FROM {$CFG->prefix}user_info_data d_inst WHERE d_inst.fieldid = 15 AND d_inst.userid = u.id) AS gender,
+					(SELECT d_inst.data FROM {$CFG->prefix}user_info_data d_inst WHERE d_inst.fieldid = 16 AND d_inst.userid = u.id) AS dateofbirth,
+					(SELECT d_inst.data FROM {$CFG->prefix}user_info_data d_inst WHERE d_inst.fieldid = 6 AND d_inst.userid = u.id) AS highest_degree,
+					(SELECT d_inst.data FROM {$CFG->prefix}user_info_data d_inst WHERE d_inst.fieldid = 7 AND d_inst.userid = u.id) AS institution,
+					(SELECT d_inst.data FROM {$CFG->prefix}user_info_data d_inst WHERE d_inst.fieldid = 20 AND d_inst.userid = u.id) AS institution_type
+				FROM
+					{$CFG->prefix}role_assignments ra 
+					JOIN {$CFG->prefix}user u ON u.id = ra.userid
+					JOIN {$CFG->prefix}role r ON r.id = ra.roleid
+					JOIN {$CFG->prefix}context ct ON ct.id = ra.contextid
+					JOIN {$CFG->prefix}course c ON c.id = ct.instanceid
+					LEFT JOIN {$CFG->prefix}user_lastaccess mul ON ct.instanceid = mul.courseid
+					LEFT JOIN
+					(
+						SELECT
+							u.id AS userid,
+							c.id AS courseid,
+							g.finalgrade AS finalgrade
+						FROM 
+							{$CFG->prefix}user u
+						JOIN {$CFG->prefix}grade_grades g ON g.userid = u.id
+						JOIN {$CFG->prefix}grade_items gi ON g.itemid =  gi.id
+						JOIN {$CFG->prefix}course c ON c.id = gi.courseid
+						WHERE 
+							gi.itemtype = 'course'
+					) gg ON gg.userid = u.id AND gg.courseid = c.id
+					LEFT JOIN {$CFG->prefix}course_categories cca ON c.category = cca.id
+				WHERE
+					ct.contextlevel = 50
+					AND (ra.roleid = " . ROLE_STUDENT . " OR ra.roleid = " . ROLE_DROPOUT . ")
+					AND mul.userid = ra.userid
+					AND cca.id IN ($categoryid)
+					AND c.startdate > " . $startdate . "
+
+				UNION
+
+				SELECT
+					c.id AS course_id,
+					c.category,
+					CASE
+						WHEN (SELECT mcd.value FROM {$CFG->prefix}customfield_data mcd WHERE mcd.instanceid = c.id AND mcd.fieldid = (SELECT mcf.id FROM {$CFG->prefix}customfield_field mcf WHERE shortname = 'coursetype')) = 1 THEN 'Tutor'
+						WHEN (SELECT mcd.value FROM {$CFG->prefix}customfield_data mcd WHERE mcd.instanceid = c.id AND mcd.fieldid = (SELECT mcf.id FROM {$CFG->prefix}customfield_field mcf WHERE shortname = 'coursetype')) = 2 THEN 'Self-paced'
+						WHEN (SELECT mcd.value FROM {$CFG->prefix}customfield_data mcd WHERE mcd.instanceid = c.id AND mcd.fieldid = (SELECT mcf.id FROM {$CFG->prefix}customfield_field mcf WHERE shortname = 'coursetype')) = 3 THEN 'Face to Face'
+						WHEN (SELECT mcd.value FROM {$CFG->prefix}customfield_data mcd WHERE mcd.instanceid = c.id AND mcd.fieldid = (SELECT mcf.id FROM {$CFG->prefix}customfield_field mcf WHERE shortname = 'coursetype')) = 4 THEN 'Synchronous-online'
+						WHEN (SELECT mcd.value FROM {$CFG->prefix}customfield_data mcd WHERE mcd.instanceid = c.id AND mcd.fieldid = (SELECT mcf.id FROM {$CFG->prefix}customfield_field mcf WHERE shortname = 'coursetype')) = 5 THEN 'Open Educational Resources'
+						WHEN (SELECT mcd.value FROM {$CFG->prefix}customfield_data mcd WHERE mcd.instanceid = c.id AND mcd.fieldid = (SELECT mcf.id FROM {$CFG->prefix}customfield_field mcf WHERE shortname = 'coursetype')) = 6 THEN 'Communities'
+						WHEN (SELECT mcd.value FROM {$CFG->prefix}customfield_data mcd WHERE mcd.instanceid = c.id AND mcd.fieldid = (SELECT mcf.id FROM {$CFG->prefix}customfield_field mcf WHERE shortname = 'coursetype')) = 7 THEN 'Certifications'	
+					END AS course_type,
+					c.idnumber,
+					c.shortname AS shortname,
+					c.fullname AS fullname,
+					c.startdate,
+					c.enddate,
+					c.lang,
+					(
+						SELECT MAX(cert.printhours)
+						FROM {$CFG->prefix}certificate cert
+						WHERE cert.course = c.id
+					) AS credithours,
+					u.id AS user_id,
+					u.email AS email,
+					'' as UnixUser_LastAccess,
+					'' as User_LastAccess,
+					'N' as User_Status,
+					u.lastip,
+					ra.roleid,
+					ra.timemodified,
+					COALESCE(ROUND(gg.finalgrade,2),0) as finalgrade,
+					u.country,
+					(SELECT d_inst.data FROM {$CFG->prefix}user_info_data d_inst WHERE d_inst.fieldid = 15 AND d_inst.userid = u.id) AS gender,
+					(SELECT d_inst.data FROM {$CFG->prefix}user_info_data d_inst WHERE d_inst.fieldid = 16 AND d_inst.userid = u.id) AS dateofbirth,
+					(SELECT d_inst.data FROM {$CFG->prefix}user_info_data d_inst WHERE d_inst.fieldid = 6 AND d_inst.userid = u.id) AS highest_degree,
+					(SELECT d_inst.data FROM {$CFG->prefix}user_info_data d_inst WHERE d_inst.fieldid = 7 AND d_inst.userid = u.id) AS institution,
+					(SELECT d_inst.data FROM {$CFG->prefix}user_info_data d_inst WHERE d_inst.fieldid = 20 AND d_inst.userid = u.id) AS institution_type
+				FROM 
+					{$CFG->prefix}role_assignments ra 
+					JOIN {$CFG->prefix}user u ON u.id = ra.userid
+					JOIN {$CFG->prefix}role r ON r.id = ra.roleid
+					JOIN {$CFG->prefix}context ct ON ct.id = ra.contextid
+					JOIN {$CFG->prefix}course c ON c.id = ct.instanceid
+					LEFT JOIN
+					(
+						SELECT
+							u.id AS userid,
+							c.id AS courseid,
+							g.finalgrade AS finalgrade
+						FROM 
+							{$CFG->prefix}user u
+						JOIN {$CFG->prefix}grade_grades g ON g.userid = u.id
+						JOIN {$CFG->prefix}grade_items gi ON g.itemid =  gi.id
+						JOIN {$CFG->prefix}course c ON c.id = gi.courseid
+						WHERE 
+							gi.itemtype = 'course'
+					) gg ON gg.userid = u.id AND gg.courseid = c.id
+					LEFT JOIN {$CFG->prefix}course_categories cca ON c.category = cca.id
+				WHERE
+					ct.contextlevel = 50
+					AND (ra.roleid = " . ROLE_STUDENT . " OR ra.roleid = " . ROLE_DROPOUT . ")
+					AND ra.userid not in (select mul.userid from {$CFG->prefix}user_lastaccess mul where mul.courseid = c.id and mul.userid = ra.userid)
+					AND cca.id IN ($categoryid)
+					AND c.startdate > " . $startdate;
+
+        $participants = $DB->get_recordset_sql($sql);
+
+        $registrations = array();
+
+        foreach ($participants as $participant) {
+
+            $registration = array();
+
+            $fecha_inicio = date_create();
+            $fecha_inicio = date_timestamp_set($fecha_inicio, $participant->startdate);
+
+            $fecha_fin = date_create();
+            $fecha_fin = date_timestamp_set($fecha_fin, $participant->enddate);
+
+            $diff_fecha_inicio_fin = date_diff($fecha_inicio,$fecha_fin);
+
+            $idnumber = explode("|", $participant->idnumber);
+
+            $registration['courseid'] = $participant->course_id;
+            $registration['categoryid'] = $participant->category;
+            $registration['course_type'] = $participant->course_type;
+            $registration['item'] = $idnumber[0];
+            $registration['offering'] = $idnumber[1];
+            $registration['shortname'] = $participant->shortname;
+            $registration['name'] = $participant->fullname;
+            $registration['start_date'] = date('Y-m-d H:i:s', $participant->startdate);
+            $registration['end_date'] = date('Y-m-d H:i:s', $participant->enddate);
+            $registration['lang'] = $participant->lang;
+            //$registration['calculated_end_date'] = date('Y-m-d H:i:s', strtotime("+" . $participant->numsections . " weeks", $participant->startdate));
+            $registration['credithours'] = $participant->credithours;
+            //$registration['calculated_credithours'] = ($diff_fecha_inicio_fin->format("%R%a")/7)*10;
+            //$registration['numsections'] = $participant->numsections;
+            $registration['userid'] = $participant->user_id;
+            //$registration['firstname'] = $participant->firstname;
+            //$registration['lastname'] = $participant->lastname;
+            $registration['email'] = $participant->email;
+            $registration['unixuser_lastaccess'] = $participant->unixuser_lastaccess;
+            $registration['user_lastaccess'] = ($participant->unixuser_lastaccess != '' ? date('Y-m-d H:i:s', $participant->unixuser_lastaccess) : '');
+            $registration['user_status'] = $participant->user_status;
+            $registration['lastip'] = $participant->lastip;
+            $registration['roleid'] = $participant->roleid;
+            $registration['timemodified'] = date('Y-m-d H:i:s', $participant->timemodified);
+            $registration['finalgrade'] = $participant->finalgrade;
+            $registration['country'] = filterProfileFields(PROFILE_COUNTRY, $participant->country);
+            $registration['gender'] = filterProfileFields(PROFILE_FIELD_GENDER, $participant->gender);
+            $registration['dateofbirth'] = $participant->dateofbirth;
+            $registration['degree'] = filterProfileFields(PROFILE_FIELD_HIGHEST_DEGREE, $participant->highest_degree);
+            $registration['institution_name'] = $participant->institution;
+            $registration['institution_type'] = filterProfileFields(PROFILE_FIELD_INSTITUTION_TYPE, $participant->institution_type);
+
+            $registrations[] = $registration;
+        }
+
+        $participants->close();
+
+        return $registrations;
+    }
+
+
+    /**
+     * Returns structure for method get_grades_participant_category
+     * @return structure
+     */
+    public static function get_nameless_grades_participant_category_returns() {
+        return new external_multiple_structure(
+            new external_single_structure(
+                array(
+					'courseid'    			=> new external_value(PARAM_NUMBER, 'ID of the course'),
+					'categoryid'    		=> new external_value(PARAM_NUMBER, 'ID of the category ourse'),
+					'course_type'    		=> new external_value(PARAM_RAW, 'Type of course'),
+					'item'    				=> new external_value(PARAM_RAW, 'SuccessFactors Item ID Number'),
+					'offering' 				=> new external_value(PARAM_RAW, 'SuccessFactors Offering ID Number'),
+					'shortname'    			=> new external_value(PARAM_RAW, 'Short Name of the course'),
+					'name'    				=> new external_value(PARAM_RAW, 'Full Name of the course'),
+					'start_date'			=> new external_value(PARAM_RAW, 'Date when the course will start'),
+					'end_date'				=> new external_value(PARAM_RAW, 'Moodle date when the course will end'),
+					'lang'					=> new external_value(PARAM_RAW, 'Language of the course'),
+					'credithours'			=> new external_value(PARAM_RAW, 'Moodle credit housrs of the course'),
+					'userid'    			=> new external_value(PARAM_NUMBER, 'User\'s ID'),
+					'email'    				=> new external_value(PARAM_RAW, 'User\'s Email'),
+					'unixuser_lastaccess'	=> new external_value(PARAM_RAW, 'Unix date when the user accessed the last time to the course'),
+					'user_lastaccess'		=> new external_value(PARAM_RAW, 'Human date when the user accessed the last time to the course'),
+					'user_status'  			=> new external_value(PARAM_RAW, 'User Last Access Status'),
+					'lastip'    			=> new external_value(PARAM_RAW, 'User\'s Last IP'),
+					'roleid'				=> new external_value(PARAM_RAW, 'User\'s role ID'),
+					'timemodified'    		=> new external_value(PARAM_RAW, 'Time when the users was enrolled to the course'),
+					'finalgrade'			=> new external_value(PARAM_NUMBER, 'Final grade in the course'),
+					'country'				=> new external_value(PARAM_RAW, 'Participant\'s Country'),
+					'gender'    			=> new external_value(PARAM_RAW, 'User\'s gender'),
+					'dateofbirth'    		=> new external_value(PARAM_RAW, 'User\'s dateofbirth'),
+					'degree'    			=> new external_value(PARAM_RAW, 'User\'s degree'),
+					'institution_name'		=> new external_value(PARAM_RAW, 'Name of the institution that the Facilitator belongs to'),
+					'institution_type'		=> new external_value(PARAM_RAW, 'Type of the institution that the Facilitator belongs to')
+				)
+			)
+		);
+    }
+
+
+    /**
+     * Get the enrolled & dropout participants with their grade from a category (courses)
+     * @return external_function_parameters
+     */
+    public static function kpi_get_nameless_grades_participant_category_parameters() {
+        return new external_function_parameters(
+            array(
+                    'categoryid'  => new external_value(PARAM_RAW, 'IDs of Moodle categories, separated by comma'),
+					'startdate'  => new external_value(PARAM_INT, 'Start date of courses to filter')
+                )
+        );
+    }
+
+
+    /**
+    * Get the enrolled & dropout participants (without firstname & lastname) with their grade from a category (courses)
+    * @param int $categoryid Category ID
+    */
+	public static function kpi_get_nameless_grades_participant_category($categoryid, $startdate = NULL) {
+        global $CFG, $USER, $DB;
+        require_once($CFG->dirroot . "/user/lib.php");
+
+        //Parameter validation
+        //REQUIRED
+        $params = self::validate_parameters(self::kpi_get_nameless_grades_participant_category_parameters(),
+                array('categoryid' => $categoryid, 'startdate' => $startdate));
+
+		$sql = "
+				SELECT
+					c.id AS course_id,
+					c.category,
+					CASE
+						WHEN (SELECT mcd.value FROM {$CFG->prefix}customfield_data mcd WHERE mcd.instanceid = c.id AND mcd.fieldid = (SELECT mcf.id FROM {$CFG->prefix}customfield_field mcf WHERE shortname = 'coursetype')) = 1 THEN 'Tutor'
+						WHEN (SELECT mcd.value FROM {$CFG->prefix}customfield_data mcd WHERE mcd.instanceid = c.id AND mcd.fieldid = (SELECT mcf.id FROM {$CFG->prefix}customfield_field mcf WHERE shortname = 'coursetype')) = 2 THEN 'Self-paced'
+						WHEN (SELECT mcd.value FROM {$CFG->prefix}customfield_data mcd WHERE mcd.instanceid = c.id AND mcd.fieldid = (SELECT mcf.id FROM {$CFG->prefix}customfield_field mcf WHERE shortname = 'coursetype')) = 3 THEN 'Face to Face'
+						WHEN (SELECT mcd.value FROM {$CFG->prefix}customfield_data mcd WHERE mcd.instanceid = c.id AND mcd.fieldid = (SELECT mcf.id FROM {$CFG->prefix}customfield_field mcf WHERE shortname = 'coursetype')) = 4 THEN 'Synchronous-online'
+						WHEN (SELECT mcd.value FROM {$CFG->prefix}customfield_data mcd WHERE mcd.instanceid = c.id AND mcd.fieldid = (SELECT mcf.id FROM {$CFG->prefix}customfield_field mcf WHERE shortname = 'coursetype')) = 5 THEN 'Open Educational Resources'
+						WHEN (SELECT mcd.value FROM {$CFG->prefix}customfield_data mcd WHERE mcd.instanceid = c.id AND mcd.fieldid = (SELECT mcf.id FROM {$CFG->prefix}customfield_field mcf WHERE shortname = 'coursetype')) = 6 THEN 'Communities'
+						WHEN (SELECT mcd.value FROM {$CFG->prefix}customfield_data mcd WHERE mcd.instanceid = c.id AND mcd.fieldid = (SELECT mcf.id FROM {$CFG->prefix}customfield_field mcf WHERE shortname = 'coursetype')) = 7 THEN 'Certifications'	
+					END AS course_type,
+					c.idnumber,
+					c.shortname AS shortname,
+					c.fullname AS fullname,
+					c.startdate,
+					c.enddate,
+					c.lang,
+					(
+						SELECT MAX(cert.printhours)
+						FROM {$CFG->prefix}certificate cert
+						WHERE cert.course = c.id
+					) AS credithours,
+					u.id AS user_id,
+					u.email AS email,
+					mul.timeaccess AS UnixUser_LastAccess,
+					mul.timeaccess AS User_LastAccess,
+					CASE
+						WHEN mul.timeaccess < c.startdate THEN 'I'
+						WHEN mul.timeaccess >= c.startdate THEN 'A'
+					END AS User_Status,
+					u.lastip,
+					ra.roleid,
+					ra.timemodified,
+					(SELECT mcc.timestarted FROM {$CFG->prefix}course_completions mcc WHERE mcc.course = c.id AND mcc.userid = u.id) AS Time_Started,
+					(SELECT mcc.timecompleted FROM {$CFG->prefix}course_completions mcc WHERE mcc.course = c.id AND mcc.userid = u.id) AS Time_Completed,
+					DATEDIFF((SELECT FROM_UNIXTIME(mcc.timecompleted) FROM {$CFG->prefix}course_completions mcc WHERE mcc.course = c.id AND mcc.userid = u.id), FROM_UNIXTIME(c.startdate)) AS Days_Taking_Course,
+					(SELECT DATEDIFF(FROM_UNIXTIME(mcc.timecompleted), FROM_UNIXTIME(mcc.timeenrolled)) FROM {$CFG->prefix}course_completions mcc WHERE mcc.course = c.id AND mcc.userid = u.id) AS Days_Until_Completion,
+					COALESCE(ROUND(gg.finalgrade,2),0) AS finalgrade,
+					u.country,
+					(SELECT d_inst.data FROM {$CFG->prefix}user_info_data d_inst WHERE d_inst.fieldid = 15 AND d_inst.userid = u.id) AS gender,
+					(SELECT d_inst.data FROM {$CFG->prefix}user_info_data d_inst WHERE d_inst.fieldid = 16 AND d_inst.userid = u.id) AS dateofbirth,
+					(SELECT d_inst.data FROM {$CFG->prefix}user_info_data d_inst WHERE d_inst.fieldid = 6 AND d_inst.userid = u.id) AS highest_degree,
+					(SELECT d_inst.data FROM {$CFG->prefix}user_info_data d_inst WHERE d_inst.fieldid = 7 AND d_inst.userid = u.id) AS institution,
+					(SELECT d_inst.data FROM {$CFG->prefix}user_info_data d_inst WHERE d_inst.fieldid = 20 AND d_inst.userid = u.id) AS institution_type
+				FROM
+					{$CFG->prefix}role_assignments ra 
+					JOIN {$CFG->prefix}user u ON u.id = ra.userid
+					JOIN {$CFG->prefix}role r ON r.id = ra.roleid
+					JOIN {$CFG->prefix}context ct ON ct.id = ra.contextid
+					JOIN {$CFG->prefix}course c ON c.id = ct.instanceid
+					LEFT JOIN {$CFG->prefix}user_lastaccess mul ON ct.instanceid = mul.courseid
+					LEFT JOIN
+					(
+						SELECT
+							u.id AS userid,
+							c.id AS courseid,
+							g.finalgrade AS finalgrade
+						FROM 
+							{$CFG->prefix}user u
+						JOIN {$CFG->prefix}grade_grades g ON g.userid = u.id
+						JOIN {$CFG->prefix}grade_items gi ON g.itemid =  gi.id
+						JOIN {$CFG->prefix}course c ON c.id = gi.courseid
+						WHERE 
+							gi.itemtype = 'course'
+					) gg ON gg.userid = u.id AND gg.courseid = c.id
+					LEFT JOIN {$CFG->prefix}course_categories cca ON c.category = cca.id
+				WHERE
+					ct.contextlevel = 50
+					AND (ra.roleid = " . ROLE_STUDENT . " OR ra.roleid = " . ROLE_DROPOUT . ")
+					AND mul.userid = ra.userid
+					AND cca.id IN ($categoryid)
+					AND c.startdate > " . $startdate . "
+
+				UNION
+
+				SELECT
+					c.id AS course_id,
+					c.category,
+					CASE
+						WHEN (SELECT mcd.value FROM {$CFG->prefix}customfield_data mcd WHERE mcd.instanceid = c.id AND mcd.fieldid = (SELECT mcf.id FROM {$CFG->prefix}customfield_field mcf WHERE shortname = 'coursetype')) = 1 THEN 'Tutor'
+						WHEN (SELECT mcd.value FROM {$CFG->prefix}customfield_data mcd WHERE mcd.instanceid = c.id AND mcd.fieldid = (SELECT mcf.id FROM {$CFG->prefix}customfield_field mcf WHERE shortname = 'coursetype')) = 2 THEN 'Self-paced'
+						WHEN (SELECT mcd.value FROM {$CFG->prefix}customfield_data mcd WHERE mcd.instanceid = c.id AND mcd.fieldid = (SELECT mcf.id FROM {$CFG->prefix}customfield_field mcf WHERE shortname = 'coursetype')) = 3 THEN 'Face to Face'
+						WHEN (SELECT mcd.value FROM {$CFG->prefix}customfield_data mcd WHERE mcd.instanceid = c.id AND mcd.fieldid = (SELECT mcf.id FROM {$CFG->prefix}customfield_field mcf WHERE shortname = 'coursetype')) = 4 THEN 'Synchronous-online'
+						WHEN (SELECT mcd.value FROM {$CFG->prefix}customfield_data mcd WHERE mcd.instanceid = c.id AND mcd.fieldid = (SELECT mcf.id FROM {$CFG->prefix}customfield_field mcf WHERE shortname = 'coursetype')) = 5 THEN 'Open Educational Resources'
+						WHEN (SELECT mcd.value FROM {$CFG->prefix}customfield_data mcd WHERE mcd.instanceid = c.id AND mcd.fieldid = (SELECT mcf.id FROM {$CFG->prefix}customfield_field mcf WHERE shortname = 'coursetype')) = 6 THEN 'Communities'
+						WHEN (SELECT mcd.value FROM {$CFG->prefix}customfield_data mcd WHERE mcd.instanceid = c.id AND mcd.fieldid = (SELECT mcf.id FROM {$CFG->prefix}customfield_field mcf WHERE shortname = 'coursetype')) = 7 THEN 'Certifications'	
+					END AS course_type,
+					c.idnumber,
+					c.shortname AS shortname,
+					c.fullname AS fullname,
+					c.startdate,
+					c.enddate,
+					c.lang,
+					(
+						SELECT MAX(cert.printhours)
+						FROM {$CFG->prefix}certificate cert
+						WHERE cert.course = c.id
+					) AS credithours,
+					u.id AS user_id,
+					u.email AS email,
+					'' as UnixUser_LastAccess,
+					'' as User_LastAccess,
+					'N' as User_Status,
+					u.lastip,
+					ra.roleid,
+					ra.timemodified,
+					(SELECT mcc.timestarted FROM {$CFG->prefix}course_completions mcc WHERE mcc.course = c.id AND mcc.userid = u.id) AS Time_Started,
+					(SELECT mcc.timecompleted FROM {$CFG->prefix}course_completions mcc WHERE mcc.course = c.id AND mcc.userid = u.id) AS Time_Completed,
+					DATEDIFF((SELECT FROM_UNIXTIME(mcc.timecompleted) FROM {$CFG->prefix}course_completions mcc WHERE mcc.course = c.id AND mcc.userid = u.id), FROM_UNIXTIME(c.startdate)) AS Days_Taking_Course,
+					(SELECT DATEDIFF(FROM_UNIXTIME(mcc.timecompleted), FROM_UNIXTIME(mcc.timeenrolled)) FROM {$CFG->prefix}course_completions mcc WHERE mcc.course = c.id AND mcc.userid = u.id) AS Days_Until_Completion,
+					COALESCE(ROUND(gg.finalgrade,2),0) as finalgrade,
+					u.country,
+					(SELECT d_inst.data FROM {$CFG->prefix}user_info_data d_inst WHERE d_inst.fieldid = 15 AND d_inst.userid = u.id) AS gender,
+					(SELECT d_inst.data FROM {$CFG->prefix}user_info_data d_inst WHERE d_inst.fieldid = 16 AND d_inst.userid = u.id) AS dateofbirth,
+					(SELECT d_inst.data FROM {$CFG->prefix}user_info_data d_inst WHERE d_inst.fieldid = 6 AND d_inst.userid = u.id) AS highest_degree,
+					(SELECT d_inst.data FROM {$CFG->prefix}user_info_data d_inst WHERE d_inst.fieldid = 7 AND d_inst.userid = u.id) AS institution,
+					(SELECT d_inst.data FROM {$CFG->prefix}user_info_data d_inst WHERE d_inst.fieldid = 20 AND d_inst.userid = u.id) AS institution_type
+				FROM 
+					{$CFG->prefix}role_assignments ra 
+					JOIN {$CFG->prefix}user u ON u.id = ra.userid
+					JOIN {$CFG->prefix}role r ON r.id = ra.roleid
+					JOIN {$CFG->prefix}context ct ON ct.id = ra.contextid
+					JOIN {$CFG->prefix}course c ON c.id = ct.instanceid
+					LEFT JOIN
+					(
+						SELECT
+							u.id AS userid,
+							c.id AS courseid,
+							g.finalgrade AS finalgrade
+						FROM 
+							{$CFG->prefix}user u
+						JOIN {$CFG->prefix}grade_grades g ON g.userid = u.id
+						JOIN {$CFG->prefix}grade_items gi ON g.itemid =  gi.id
+						JOIN {$CFG->prefix}course c ON c.id = gi.courseid
+						WHERE 
+							gi.itemtype = 'course'
+					) gg ON gg.userid = u.id AND gg.courseid = c.id
+					LEFT JOIN {$CFG->prefix}course_categories cca ON c.category = cca.id
+				WHERE
+					ct.contextlevel = 50
+					AND (ra.roleid = " . ROLE_STUDENT . " OR ra.roleid = " . ROLE_DROPOUT . ")
+					AND ra.userid not in (select mul.userid from {$CFG->prefix}user_lastaccess mul where mul.courseid = c.id and mul.userid = ra.userid)
+					AND cca.id IN ($categoryid)
+					AND c.startdate > " . $startdate;
+
+        $participants = $DB->get_recordset_sql($sql);
+
+        $registrations = array();
+
+        foreach ($participants as $participant) {
+			
+            //Calculo nuevo para mostrar el porcentaje de un usuario en un curso 09/25/2024
+            $course_info = get_course($participant->course_id);
+
+            $completion = new \completion_info($course_info);
+
+			// Calculate the percentage of completion
+			/*$percentage = core_completion\progress::get_course_progress_percentage($course_info, $participant->user_id);
+            if (!is_null($percentage)) {
+                $percentage = round($percentage, 2);
+            }*/
+			
+            // Check if completion tracking is enabled for the course
+            if ($completion->is_enabled()) {
+
+				// Calculate the percentage of completion
+				$percentage = core_completion\progress::get_course_progress_percentage($course_info, $participant->user_id);
+				if (!is_null($percentage)) {
+					$percentage = round($percentage, 2);
+				}
+
+					// Check if the user is enrolled in the course
+					$context = context_course::instance($course_info->id);
+					try {
+						if (is_enrolled($context, $participant->user_id)) {
+							// Try to fetch completion status
+							try {
+								$completion_status_response = core_completion_external::get_course_completion_status($participant->course_id, $participant->user_id);
+								$completion_status = $completion_status_response['completionstatus']['completed'] ?? 0; // 1 for completed, 0 for not completed
+							} catch (moodle_exception $e) {
+								// Handle if no completion criteria are set
+								if ($e->errorcode == 'nocriteriaset') {
+									$completion_status = 0; // Default to 0 (incomplete) if no criteria are set
+								} else {
+									throw $e; // Re-throw other exceptions
+								}
+							}
+						} else {
+							// User is not enrolled in the course, set defaults
+							$percentage = 0; // Or whatever default value you'd like for non-enrolled users
+							$completion_status = 0; // Set completion to 0 if the user is not enrolled
+						}
+					} catch (moodle_exception $enrollmentException) {
+						// Catch and handle the usernotenroled exception
+						if ($enrollmentException->errorcode == 'usernotenroled') {
+							// Handle case when user is not enrolled in this course
+							$percentage = 0;
+							$completion_status = 0; // Set completion status as incomplete
+						} else {
+							throw $enrollmentException; // Re-throw any other exceptions
+						}
+					}
+			} else {
+				// Completion tracking is not enabled for this course
+				$percentage = null; // No progress to report if tracking is not enabled
+				$completion_status = 0; // Set completion status as 0 if tracking is not enabled
+			}
+
+            //Calculo nuevo para mostrar el porcentaje de un usuario en un curso 09/25/2024
+
+            $registration = array();
+
+            $fecha_inicio = date_create();
+            $fecha_inicio = date_timestamp_set($fecha_inicio, $participant->startdate);
+
+            $fecha_fin = date_create();
+            $fecha_fin = date_timestamp_set($fecha_fin, $participant->enddate);
+
+            $diff_fecha_inicio_fin = date_diff($fecha_inicio,$fecha_fin);
+
+            $idnumber = explode("|", $participant->idnumber);
+
+            $registration['courseid'] = $participant->course_id;
+            $registration['categoryid'] = $participant->category;
+            $registration['course_type'] = $participant->course_type;
+            $registration['item'] = $idnumber[0];
+            $registration['offering'] = $idnumber[1];
+            $registration['shortname'] = $participant->shortname;
+            $registration['name'] = $participant->fullname;
+            $registration['start_date'] = date('Y-m-d H:i:s', $participant->startdate);
+            $registration['end_date'] = date('Y-m-d H:i:s', $participant->enddate);
+            $registration['lang'] = $participant->lang;
+            //$registration['calculated_end_date'] = date('Y-m-d H:i:s', strtotime("+" . $participant->numsections . " weeks", $participant->startdate));
+            $registration['credithours'] = $participant->credithours;
+            //$registration['calculated_credithours'] = ($diff_fecha_inicio_fin->format("%R%a")/7)*10;
+            //$registration['numsections'] = $participant->numsections;
+            $registration['userid'] = $participant->user_id;
+            //$registration['firstname'] = $participant->firstname;
+            //$registration['lastname'] = $participant->lastname;
+            $registration['email'] = $participant->email;
+            $registration['unixuser_lastaccess'] = $participant->unixuser_lastaccess;
+            $registration['user_lastaccess'] = ($participant->unixuser_lastaccess != '' ? date('Y-m-d H:i:s', $participant->unixuser_lastaccess) : '');
+            $registration['user_status'] = $participant->user_status;
+            $registration['percentage'] = $percentage;
+            $registration['completion_status'] = $completion_status;
+            $registration['lastip'] = $participant->lastip;
+            $registration['roleid'] = $participant->roleid;
+            $registration['timemodified'] = date('Y-m-d H:i:s', $participant->timemodified);
+			$registration['time_started'] = date('Y-m-d H:i:s', $participant->time_started);
+			$registration['time_completed'] = date('Y-m-d H:i:s', $participant->time_completed);
+            $registration['days_taking_course'] = $participant->days_taking_course;
+            $registration['days_until_completion'] = $participant->days_until_completion;
+            $registration['finalgrade'] = $participant->finalgrade;
+            $registration['country'] = filterProfileFields(PROFILE_COUNTRY, $participant->country);
+            $registration['gender'] = filterProfileFields(PROFILE_FIELD_GENDER, $participant->gender);
+            $registration['dateofbirth'] = $participant->dateofbirth;
+            $registration['degree'] = filterProfileFields(PROFILE_FIELD_HIGHEST_DEGREE, $participant->highest_degree);
+            $registration['institution_name'] = $participant->institution;
+            $registration['institution_type'] = filterProfileFields(PROFILE_FIELD_INSTITUTION_TYPE, $participant->institution_type);
+
+            $registrations[] = $registration;
+        }
+
+        $participants->close();
+
+        return $registrations;
+    }
+	
+    /**
+     * Returns structure for method kpi_get_grades_participant_category
+     * @return structure
+     */
+    public static function kpi_get_nameless_grades_participant_category_returns() {
+        return new external_multiple_structure(
+            new external_single_structure(
+                array(
+					'courseid'    			=> new external_value(PARAM_NUMBER, 'ID of the course'),
+					'categoryid'    		=> new external_value(PARAM_NUMBER, 'ID of the category ourse'),
+					'course_type'    		=> new external_value(PARAM_RAW, 'Type of course'),
+					'item'    				=> new external_value(PARAM_RAW, 'SuccessFactors Item ID Number'),
+					'offering' 				=> new external_value(PARAM_RAW, 'SuccessFactors Offering ID Number'),
+					'shortname'    			=> new external_value(PARAM_RAW, 'Short Name of the course'),
+					'name'    				=> new external_value(PARAM_RAW, 'Full Name of the course'),
+					'start_date'			=> new external_value(PARAM_RAW, 'Date when the course will start'),
+					'end_date'				=> new external_value(PARAM_RAW, 'Moodle date when the course will end'),
+					'lang'					=> new external_value(PARAM_RAW, 'Language of the course'),
+					'credithours'			=> new external_value(PARAM_RAW, 'Moodle credit housrs of the course'),
+					'userid'    			=> new external_value(PARAM_NUMBER, 'User\'s ID'),
+					'email'    				=> new external_value(PARAM_RAW, 'User\'s Email'),
+					'unixuser_lastaccess'	=> new external_value(PARAM_RAW, 'Unix date when the user accessed the last time to the course'),
+					'user_lastaccess'		=> new external_value(PARAM_RAW, 'Human date when the user accessed the last time to the course'),
+					'user_status'  			=> new external_value(PARAM_RAW, 'User Last Access Status'),
+					'percentage'  			=> new external_value(PARAM_NUMBER, 'Participant percentage course completed'),
+					'completion_status'  	=> new external_value(PARAM_RAW, 'User Last Access Status'),
+					'lastip'    			=> new external_value(PARAM_RAW, 'User\'s Last IP'),
+					'roleid'				=> new external_value(PARAM_RAW, 'User\'s role ID'),
+					'timemodified'    		=> new external_value(PARAM_RAW, 'Time when the user was enrolled to the course'),
+					'time_started'    		=> new external_value(PARAM_RAW, 'Time when the user started the course'),
+					'time_completed'    	=> new external_value(PARAM_RAW, 'Time when the user completed the course'),
+					'days_taking_course'	=> new external_value(PARAM_NUMBER, 'Days taking course by the user, is the difference between the course startdate and the time completed'),
+					'days_until_completion'	=> new external_value(PARAM_NUMBER, 'Days until completion, is the difference between the time completed and time enrolled'),
+					'finalgrade'			=> new external_value(PARAM_NUMBER, 'Final grade in the course'),
+					'country'				=> new external_value(PARAM_RAW, 'Participant\'s Country'),
+					'gender'    			=> new external_value(PARAM_RAW, 'User\'s gender'),
+					'dateofbirth'    		=> new external_value(PARAM_RAW, 'User\'s dateofbirth'),
+					'degree'    			=> new external_value(PARAM_RAW, 'User\'s degree'),
+					'institution_name'		=> new external_value(PARAM_RAW, 'Name of the institution that the Facilitator belongs to'),
+					'institution_type'		=> new external_value(PARAM_RAW, 'Type of the institution that the Facilitator belongs to')
+				)
+			)
+		);
+    }
+
+
+    /**
+     * Get the enrolled & dropout participants with their grade from a category (courses)
+     * @return external_function_parameters
+     */
+    public static function get_nameless_grades_participants_by_category_parameters() {
+        return new external_function_parameters(
+            array(
+                    'categoryid'  => new external_value(PARAM_RAW, 'IDs of Moodle categories, separated by comma'),
+					'startdate'  => new external_value(PARAM_INT, 'Start date of courses to filter')
+                )
+        );
+    }
+
+    /**
+    * Get the enrolled & dropout participants (without firstname & lastname) with their grade from a category (courses) without user status
+    * @param int $categoryid Category ID
+    */
+    public static function get_nameless_grades_participants_by_category($categoryid, $startdate = NULL) {
+        global $CFG, $USER, $DB;
+        require_once($CFG->dirroot . "/user/lib.php");
+
+        //Parameter validation
+        //REQUIRED
+        $params = self::validate_parameters(self::get_nameless_grades_participants_by_category_parameters(),
+                array('categoryid' => $categoryid, 'startdate' => $startdate));
+
+		$sql = "
+				SELECT
+					c.id as course_id,
+					c.category,
+					CASE
+						WHEN (SELECT mcd.value FROM {$CFG->prefix}customfield_data mcd WHERE mcd.instanceid = c.id AND mcd.fieldid = (SELECT mcf.id FROM {$CFG->prefix}customfield_field mcf WHERE shortname = 'coursetype')) = 1 THEN 'Tutor'
+						WHEN (SELECT mcd.value FROM {$CFG->prefix}customfield_data mcd WHERE mcd.instanceid = c.id AND mcd.fieldid = (SELECT mcf.id FROM {$CFG->prefix}customfield_field mcf WHERE shortname = 'coursetype')) = 2 THEN 'Self-paced'
+						WHEN (SELECT mcd.value FROM {$CFG->prefix}customfield_data mcd WHERE mcd.instanceid = c.id AND mcd.fieldid = (SELECT mcf.id FROM {$CFG->prefix}customfield_field mcf WHERE shortname = 'coursetype')) = 3 THEN 'Face to Face'
+						WHEN (SELECT mcd.value FROM {$CFG->prefix}customfield_data mcd WHERE mcd.instanceid = c.id AND mcd.fieldid = (SELECT mcf.id FROM {$CFG->prefix}customfield_field mcf WHERE shortname = 'coursetype')) = 4 THEN 'Synchronous-online'
+						WHEN (SELECT mcd.value FROM {$CFG->prefix}customfield_data mcd WHERE mcd.instanceid = c.id AND mcd.fieldid = (SELECT mcf.id FROM {$CFG->prefix}customfield_field mcf WHERE shortname = 'coursetype')) = 5 THEN 'Open Educational Resources'
+						WHEN (SELECT mcd.value FROM {$CFG->prefix}customfield_data mcd WHERE mcd.instanceid = c.id AND mcd.fieldid = (SELECT mcf.id FROM {$CFG->prefix}customfield_field mcf WHERE shortname = 'coursetype')) = 6 THEN 'Communities'
+						WHEN (SELECT mcd.value FROM {$CFG->prefix}customfield_data mcd WHERE mcd.instanceid = c.id AND mcd.fieldid = (SELECT mcf.id FROM {$CFG->prefix}customfield_field mcf WHERE shortname = 'coursetype')) = 7 THEN 'Certifications'	
+					END AS course_type,
+					c.idnumber,
+					c.shortname AS shortname,
+					c.fullname AS fullname,
+					c.startdate,
+					c.enddate,
+					c.lang,
+					(
+						SELECT MAX(cert.printhours)
+						FROM {$CFG->prefix}certificate cert
+						WHERE cert.course = c.id
+					) AS credithours,
+					u.id AS user_id,
+					u.email AS email,
+					u.lastip,
+					ra.roleid,
+					ra.timemodified,
+					COALESCE(ROUND(gg.finalgrade,2),0) as finalgrade,
+					u.country,
+					(SELECT d_inst.data FROM {$CFG->prefix}user_info_data d_inst WHERE d_inst.fieldid = 15 AND d_inst.userid = u.id) AS gender,
+					(SELECT d_inst.data FROM {$CFG->prefix}user_info_data d_inst WHERE d_inst.fieldid = 16 AND d_inst.userid = u.id) AS dateofbirth,
+					(SELECT d_inst.data FROM {$CFG->prefix}user_info_data d_inst WHERE d_inst.fieldid = 6 AND d_inst.userid = u.id) AS highest_degree,
+					(SELECT d_inst.data FROM {$CFG->prefix}user_info_data d_inst WHERE d_inst.fieldid = 7 AND d_inst.userid = u.id) AS institution,
+					(SELECT d_inst.data FROM {$CFG->prefix}user_info_data d_inst WHERE d_inst.fieldid = 20 AND d_inst.userid = u.id) AS institution_type
+				FROM 
+					{$CFG->prefix}role_assignments ra 
+					JOIN {$CFG->prefix}user u ON u.id = ra.userid
+					JOIN {$CFG->prefix}role r ON r.id = ra.roleid
+					JOIN {$CFG->prefix}context ct ON ct.id = ra.contextid
+					JOIN {$CFG->prefix}course c ON c.id = ct.instanceid
+					LEFT JOIN
+					(
+						SELECT
+							u.id AS userid,
+							c.id AS courseid,
+							g.finalgrade AS finalgrade
+						FROM 
+							{$CFG->prefix}user u
+						JOIN {$CFG->prefix}grade_grades g ON g.userid = u.id
+						JOIN {$CFG->prefix}grade_items gi ON g.itemid =  gi.id
+						JOIN {$CFG->prefix}course c ON c.id = gi.courseid
+						WHERE 
+							gi.itemtype = 'course'
+					) gg ON gg.userid = u.id AND gg.courseid = c.id
+					LEFT JOIN {$CFG->prefix}course_categories cca ON c.category = cca.id
+				WHERE
+					ct.contextlevel = 50
+					AND (ra.roleid = " . ROLE_STUDENT . " OR ra.roleid = " . ROLE_DROPOUT . ")
+					AND cca.id IN ($categoryid)";
+
+		if(isset($params["startdate"])){
+			$sql .= "AND c.startdate > " . $startdate;
+		}
+
+		$participants = $DB->get_recordset_sql($sql);
+
+        $registrations = array();
+
+        foreach ($participants as $participant) {
+
+            $registration = array();
+
+            $fecha_inicio = date_create();
+            $fecha_inicio = date_timestamp_set($fecha_inicio, $participant->startdate);
+
+            $fecha_fin = date_create();
+            $fecha_fin = date_timestamp_set($fecha_fin, $participant->enddate);
+
+            $diff_fecha_inicio_fin = date_diff($fecha_inicio,$fecha_fin);
+
+            $idnumber = explode("|", $participant->idnumber);
+
+            $registration['courseid'] = $participant->course_id;
+            $registration['categoryid'] = $participant->category;
+            $registration['course_type'] = $participant->course_type;
+            $registration['item'] = $idnumber[0];
+            $registration['offering'] = $idnumber[1];
+            $registration['shortname'] = $participant->shortname;
+            $registration['name'] = $participant->fullname;
+            $registration['start_date'] = date('Y-m-d H:i:s', $participant->startdate);
+            $registration['end_date'] = date('Y-m-d H:i:s', $participant->enddate);
+            $registration['lang'] = $participant->lang;
+            $registration['credithours'] = $participant->credithours;
+            $registration['userid'] = $participant->user_id;
+            $registration['email'] = $participant->email;
+            $registration['unixuser_lastaccess'] = '';
+            $registration['user_lastaccess'] = '';
+            $registration['user_status'] = '';
+            $registration['lastip'] = $participant->lastip;
+            $registration['roleid'] = $participant->roleid;
+            $registration['timemodified'] = date('Y-m-d H:i:s', $participant->timemodified);
+            $registration['finalgrade'] = $participant->finalgrade;
+            $registration['country'] = filterProfileFields(PROFILE_COUNTRY, $participant->country);
+            $registration['gender'] = filterProfileFields(PROFILE_FIELD_GENDER, $participant->gender);
+            $registration['dateofbirth'] = $participant->dateofbirth;
+            $registration['degree'] = filterProfileFields(PROFILE_FIELD_HIGHEST_DEGREE, $participant->highest_degree);
+            $registration['institution_name'] = $participant->institution;
+            $registration['institution_type'] = filterProfileFields(PROFILE_FIELD_INSTITUTION_TYPE, $participant->institution_type);
+
+            $registrations[] = $registration;
+        }
+
+        $participants->close();
+
+        return $registrations;
+    }
+
+
+    /**
+     * Returns structure for method grades_participants_by_category
+     * @return structure
+     */
+    public static function get_nameless_grades_participants_by_category_returns() {
+        return new external_multiple_structure(
+            new external_single_structure(
+                array(
+                    'courseid'    			=> new external_value(PARAM_NUMBER, 'ID of the course'),
+                    'categoryid'    		=> new external_value(PARAM_NUMBER, 'ID of the category ourse'),
+                    'course_type'    		=> new external_value(PARAM_RAW, 'Type of course'),
+                    'item'    				=> new external_value(PARAM_RAW, 'SuccessFactors Item ID Number'),
+                    'offering' 				=> new external_value(PARAM_RAW, 'SuccessFactors Offering ID Number'),
+                    'shortname'    			=> new external_value(PARAM_RAW, 'Short Name of the course'),
+                    'name'    				=> new external_value(PARAM_RAW, 'Full Name of the course'),
+                    'start_date'			=> new external_value(PARAM_RAW, 'Date when the course will start'),
+                    'end_date'				=> new external_value(PARAM_RAW, 'Moodle date when the course will end'),
+                    'lang'					=> new external_value(PARAM_RAW, 'Language of the course'),
+                    'credithours'			=> new external_value(PARAM_RAW, 'Moodle credit housrs of the course'),
+                    'userid'    			=> new external_value(PARAM_NUMBER, 'User\'s ID'),
+                    'email'    				=> new external_value(PARAM_RAW, 'User\'s Email'),
+                    'unixuser_lastaccess'	=> new external_value(PARAM_RAW, 'Unix date when the user accessed the last time to the course'),
+                    'user_lastaccess'		=> new external_value(PARAM_RAW, 'Human date when the user accessed the last time to the course'),
+                    'user_status'  			=> new external_value(PARAM_RAW, 'User Last Access Status'),
+                    'lastip'    			=> new external_value(PARAM_RAW, 'User\'s Last IP'),
+                    'roleid'				=> new external_value(PARAM_RAW, 'User\'s role ID'),
+                    'timemodified'    		=> new external_value(PARAM_RAW, 'Time when the users was enrolled to the course'),
+                    'finalgrade'			=> new external_value(PARAM_NUMBER, 'Final grade in the course'),
+                    'country'				=> new external_value(PARAM_RAW, 'Participant\'s Country'),
+                    'gender'    			=> new external_value(PARAM_RAW, 'User\'s gender'),
+                    'dateofbirth'    		=> new external_value(PARAM_RAW, 'User\'s dateofbirth'),
+                    'degree'    			=> new external_value(PARAM_RAW, 'User\'s degree'),
+                    'institution_name'		=> new external_value(PARAM_RAW, 'Name of the institution that the Facilitator belongs to'),
+                    'institution_type'		=> new external_value(PARAM_RAW, 'Type of the institution that the Facilitator belongs to')
+                )
+            )
+        );
+    }
 
     /**
      * Get the enrollment participants within a course or category
@@ -1551,6 +2446,15 @@ class indes_webservices extends external_api {
 				SELECT
 					c.id as course_id,
 					c.category,
+					CASE
+						WHEN (SELECT mcd.value FROM {$CFG->prefix}customfield_data mcd WHERE mcd.instanceid = c.id and mcd.fieldid = (select mcf.id from {$CFG->prefix}customfield_field mcf where shortname = 'coursetype')) = 1 THEN 'Tutor'
+						WHEN (SELECT mcd.value FROM {$CFG->prefix}customfield_data mcd WHERE mcd.instanceid = c.id and mcd.fieldid = (select mcf.id from {$CFG->prefix}customfield_field mcf where shortname = 'coursetype')) = 2 THEN 'Self-paced'
+						WHEN (SELECT mcd.value FROM {$CFG->prefix}customfield_data mcd WHERE mcd.instanceid = c.id and mcd.fieldid = (select mcf.id from {$CFG->prefix}customfield_field mcf where shortname = 'coursetype')) = 3 THEN 'Face to Face'
+						WHEN (SELECT mcd.value FROM {$CFG->prefix}customfield_data mcd WHERE mcd.instanceid = c.id and mcd.fieldid = (select mcf.id from {$CFG->prefix}customfield_field mcf where shortname = 'coursetype')) = 4 THEN 'Synchronous-online'
+						WHEN (SELECT mcd.value FROM {$CFG->prefix}customfield_data mcd WHERE mcd.instanceid = c.id and mcd.fieldid = (select mcf.id from {$CFG->prefix}customfield_field mcf where shortname = 'coursetype')) = 5 THEN 'Open Educational Resources'
+						WHEN (SELECT mcd.value FROM {$CFG->prefix}customfield_data mcd WHERE mcd.instanceid = c.id and mcd.fieldid = (select mcf.id from {$CFG->prefix}customfield_field mcf where shortname = 'coursetype')) = 6 THEN 'Communities'
+						WHEN (SELECT mcd.value FROM {$CFG->prefix}customfield_data mcd WHERE mcd.instanceid = c.id and mcd.fieldid = (select mcf.id from {$CFG->prefix}customfield_field mcf where shortname = 'coursetype')) = 7 THEN 'Certifications'	
+					END AS course_type,
 					c.shortname AS shortname,
 					c.fullname AS fullname,
 					c.startdate,
@@ -1576,15 +2480,15 @@ class indes_webservices extends external_api {
 						WHEN 5 THEN 'SELECTED_SCHOLARSHIP'
 						WHEN 6 THEN 'WAITING_LIST'
 						WHEN 7 THEN 'PAYMENT_NOT_RECEIVED'
-						WHEN 8 THEN 'EARLY_BIRD'	
+						WHEN 8 THEN 'EARLY_BIRD'
 					END AS enrolment_status
-					FROM {$CFG->prefix}course c
+				FROM {$CFG->prefix}course c
 					INNER JOIN {$CFG->prefix}enrol en ON c.id = en.courseid
 					INNER JOIN {$CFG->prefix}enrol_request e ON en.id = e.enrolid
 					INNER JOIN {$CFG->prefix}enrol_request_requests er ON e.id = er.enrolrequestid
 					INNER JOIN {$CFG->prefix}user u ON u.id = er.userid
 					LEFT JOIN {$CFG->prefix}course_categories cca ON c.category = cca.id
-					WHERE
+				WHERE
 					cca.id IN ($categoryid)
 					";
 					//(cca.id = $categoryid OR cca.parent = $categoryid OR cca.path like '%/$categoryid/%')
@@ -1595,34 +2499,35 @@ class indes_webservices extends external_api {
 
         foreach ($enrollments as $enrollment) {
 
-			$registration = array();
+            $registration = array();
 
-			$registration['courseid'] = $enrollment->course_id;
-			$registration['categoryid'] = $enrollment->category;
-            $registration['shortname'] = $enrollment->shortname;            
-			$registration['name'] = $enrollment->fullname;
+            $registration['courseid'] = $enrollment->course_id;
+            $registration['categoryid'] = $enrollment->category;
+            $registration['course_type'] = $enrollment->course_type;
+            $registration['shortname'] = $enrollment->shortname;
+            $registration['name'] = $enrollment->fullname;
             $registration['start_date'] = date('Y-m-d H:i:s', $enrollment->startdate);
             $registration['end_date'] = date('Y-m-d H:i:s', $enrollment->enddate);
             $registration['userid'] = $enrollment->user_id;
             $registration['firstname'] = $enrollment->firstname;
             $registration['lastname'] = $enrollment->lastname;
             $registration['email'] = $enrollment->email;
-			$registration['lastip'] = $enrollment->lastip;
+            $registration['lastip'] = $enrollment->lastip;
             $registration['institution_name'] = $enrollment->institution;
-			$registration['gender'] = filterProfileFields(PROFILE_FIELD_GENDER, $enrollment->gender);
-			$registration['work_position'] = $enrollment->work_position;
-			$registration['study_field'] = $enrollment->study_field;
-			$registration['degree'] = filterProfileFields(PROFILE_FIELD_HIGHEST_DEGREE, $enrollment->highest_degree);
+            $registration['gender'] = filterProfileFields(PROFILE_FIELD_GENDER, $enrollment->gender);
+            $registration['work_position'] = $enrollment->work_position;
+            $registration['study_field'] = $enrollment->study_field;
+            $registration['degree'] = filterProfileFields(PROFILE_FIELD_HIGHEST_DEGREE, $enrollment->highest_degree);
             $registration['institution_country'] = $enrollment->country_work;
             $registration['submitted_on'] = date('Y-m-d H:i:s', $enrollment->submitted_on);
-			$registration['enrolment_status'] = $enrollment->enrolment_status;
+            $registration['enrolment_status'] = $enrollment->enrolment_status;
 
-			$registrations[] = $registration;
+            $registrations[] = $registration;
         }
 
         $enrollments->close();
 
-		return $registrations;
+        return $registrations;
     }
 
 
@@ -1636,6 +2541,7 @@ class indes_webservices extends external_api {
                 array(
                     'courseid'    			=> new external_value(PARAM_NUMBER, 'ID of the course'),
                     'categoryid'    		=> new external_value(PARAM_NUMBER, 'ID of the category ourse'),
+					'course_type'    		=> new external_value(PARAM_RAW, 'Type of course'),
 					'shortname'    			=> new external_value(PARAM_RAW, 'Short Name of the course'),
 					'name'    				=> new external_value(PARAM_RAW, 'Full Name of the course'),
 					'start_date'			=> new external_value(PARAM_RAW, 'Date when the course will start'),
@@ -1655,8 +2561,8 @@ class indes_webservices extends external_api {
 					'enrolment_status'    	=> new external_value(PARAM_RAW, 'Current enrolment status')
 				)
 			)
-		);		
-    }	
+		);
+    }
 
 
 	/**
@@ -1683,7 +2589,7 @@ class indes_webservices extends external_api {
 		require_once($CFG->dirroot . "/grade/lib.php");
 		require_once($CFG->dirroot . "/grade/querylib.php");
 
-		//Parameter validation
+        //Parameter validation
         //REQUIRED
         $params = self::validate_parameters(self::validate_certificate_parameters(),
                 array('certcode' => $certcode));
@@ -1783,11 +2689,12 @@ class indes_webservices extends external_api {
     public static function get_categories() {
         global $CFG, $USER, $DB;
         require_once($CFG->dirroot . "/user/lib.php");
-		
+
 		$sql = "
 				SELECT
 					id,
 					name,
+					description,
 					parent,
 					depth,
 					path,
@@ -1800,17 +2707,18 @@ class indes_webservices extends external_api {
 		$categories = $DB->get_recordset_sql($sql);
 
 		$categories_info = array();
-		
+
 		foreach ($categories as $category) {
 
 			$category_info = array();
 
 			$category_info['categoryid'] = $category->id;
 			$category_info['name'] = $category->name;
+			$category_info['description'] = $category->description;
 			$category_info['parent'] = $category->parent;
 			$category_info['depth'] = $category->depth;
 			$category_info['path'] = $category->path;
-			
+
 			$categories_info[] = $category_info;
 		}
 
@@ -1820,7 +2728,7 @@ class indes_webservices extends external_api {
     }
 
 
-	/**
+    /**
      * Returns structure for method get_categories
      * @return structure
     */
@@ -1830,12 +2738,13 @@ class indes_webservices extends external_api {
                 array(
 					'categoryid'    	=> new external_value(PARAM_INT, 'ID of the category'),
                     'name'				=> new external_value(PARAM_RAW, 'Name of the category'),
+					'description'		=> new external_value(PARAM_RAW, 'Description of the category'),
 					'parent'  			=> new external_value(PARAM_INT, 'Parent of the category'),
 					'depth'				=> new external_value(PARAM_INT, 'Depth of the category'),
 					'path'				=> new external_value(PARAM_RAW, 'Path of the category')
 				)
 			)
-		);		
+		);
     }
 
 
@@ -1871,7 +2780,7 @@ class indes_webservices extends external_api {
 				qs.name AS questionnaire_name,
 				qs.courseid,
 				qques.id AS question_id,
-				qques.survey_id,
+				qques.surveyid,
 				qques.name AS question_name,
 				qques.type_id,
 				qques.position,
@@ -1879,7 +2788,7 @@ class indes_webservices extends external_api {
 				qques.required
 			FROM 
 				{$CFG->prefix}questionnaire_survey qs
-			INNER JOIN {$CFG->prefix}questionnaire_question qques ON qs.id = qques.survey_id
+			INNER JOIN {$CFG->prefix}questionnaire_question qques ON qs.id = qques.surveyid
 			WHERE qques.deleted = 'n'
 			AND qs.courseid = $courseid
 			ORDER BY qs.id, qques.position
@@ -1921,7 +2830,7 @@ class indes_webservices extends external_api {
 						SELECT
 							r_text.id AS r_id,
 							r_text.question_id AS q_id,
-							r_text.response AS value
+							r_text.response AS rankvalue
 						FROM 
 							{$CFG->prefix}questionnaire_response_text r_text
 						WHERE r_text.question_id = $questionnaire->question_id
@@ -1933,7 +2842,7 @@ class indes_webservices extends external_api {
 					SELECT
 						r_single.id AS r_id,
 						r_single.question_id AS q_id,
-						q_choice.content AS value
+						q_choice.content AS rankvalue
 						FROM 
 							{$CFG->prefix}questionnaire_resp_single r_single
 							LEFT JOIN {$CFG->prefix}questionnaire_quest_choice q_choice
@@ -1959,8 +2868,8 @@ class indes_webservices extends external_api {
 					$sql_type = "
 						SELECT
 							r_rank.id AS r_id,
-							r_rank.rank AS q_id,
-							q_choice.content AS value
+							r_rank.rankvalue AS q_id,
+							q_choice.content AS rankvalue
 						FROM
 							{$CFG->prefix}questionnaire_response_rank r_rank 
 							LEFT JOIN {$CFG->prefix}questionnaire_quest_choice q_choice 
@@ -1981,7 +2890,7 @@ class indes_webservices extends external_api {
 					";
 					break;
 			}
-			
+
 			$questionnaire_result = $DB->get_recordset_sql($sql_type);
 
 			foreach ($questionnaire_result as $q) {
@@ -1992,7 +2901,7 @@ class indes_webservices extends external_api {
 				$questionnaires_info['responses'][$questionnaires_count][value] =  $q->value;
 			}
 			$questionnaires_count = 0;
-			
+
 			$questionnaires_in_course[] = $questionnaires_info;
 		}
 
@@ -2073,21 +2982,21 @@ class indes_webservices extends external_api {
 				";
 
 		$courses = $DB->get_recordset_sql($sql);
-		
+
 		$participants_in_course = array();
 
         foreach ($courses as $course) {
-			
+
 			$participant_info = array();
 
 			$idnumber = explode("|", $course->idnumber);
 
 			$participant_info['courseID'] = $course->courseid;
 			$participant_info['itemID'] = $idnumber[0];
-			$participant_info['offeringID'] = $idnumber[1];            
+			$participant_info['offeringID'] = $idnumber[1];
 			$participant_info['shortname'] = $course->shortname;
 			$participant_info['courseTitle'] = $course->fullname;
-			
+
 			$sql_sm = "
 				SELECT 
 					d.id,
@@ -2113,8 +3022,8 @@ class indes_webservices extends external_api {
 				$ids[strtolower($obj->name)] = $obj->content;
 			}
 
-			$participant_info['templateName'] = $ids[template];
-			$participant_info['notificationEmail'] = $ids[email];
+			$participant_info['templateName'] = $ids['template'];
+			$participant_info['notificationEmail'] = $ids['email'];
 
 			$sql_participants = "
 				SELECT
@@ -2123,7 +3032,7 @@ class indes_webservices extends external_api {
 					u.firstname AS firstname,
 					u.lastname AS lastname,
 					u.email AS email
-					FROM {$CFG->prefix}role_assignments ra 
+				FROM {$CFG->prefix}role_assignments ra 
 					JOIN {$CFG->prefix}user u ON u.id = ra.userid
 					JOIN {$CFG->prefix}role r ON r.id = ra.roleid
 					JOIN {$CFG->prefix}context cxt ON cxt.id = ra.contextid
@@ -2142,6 +3051,7 @@ class indes_webservices extends external_api {
 
 			$participants_result = $DB->get_recordset_sql($sql_participants);
 
+			//Inicio metodo,extraer todos los participantes registrados
 			$course_info = get_course($course->courseid);
 
 			$completion = new \completion_info($course_info);
@@ -2150,17 +3060,16 @@ class indes_webservices extends external_api {
 			foreach ($participants_result as $participant) {
 				$percentage = core_completion\progress::get_course_progress_percentage($course_info, $participant->user_id);
 				if (!is_null($percentage)) {
-					$percentage = floor($percentage);
+					$percentage = round($percentage, 2);
 				}
-				if($percentage == 100){
-					$participants_count++;
-					$participant_info['participants'][$participants_count][userID] = $participant->user_id;
-					$participant_info['participants'][$participants_count][firstName] = $participant->firstname;
-					$participant_info['participants'][$participants_count][lastName] = $participant->lastname;
-					$participant_info['participants'][$participants_count][email] = $participant->email;
-					$participant_info['participants'][$participants_count][percentage] = $percentage;
-				}
+				$participants_count++;
+				$participant_info['participants'][$participants_count]['userID'] = $participant->user_id;
+				$participant_info['participants'][$participants_count]['firstName'] = $participant->firstname;
+				$participant_info['participants'][$participants_count]['lastName'] = $participant->lastname;
+				$participant_info['participants'][$participants_count]['email'] = $participant->email;
+				$participant_info['participants'][$participants_count]['percentage'] = $percentage;
 			}
+			//Fin metodo,extraer todos los participantes registrados
 			$participants_count = 0;
 
 			$participants_in_course[] = $participant_info;
@@ -2235,7 +3144,7 @@ class indes_webservices extends external_api {
 
 		$participant_info['courseID'] = $course->id;
 		$participant_info['itemID'] = $idnumber[0];
-		$participant_info['offeringID'] = $idnumber[1];            
+		$participant_info['offeringID'] = $idnumber[1];
 		$participant_info['shortname'] = $course->shortname;
 		$participant_info['courseTitle'] = $course->fullname;
 
@@ -2266,8 +3175,8 @@ class indes_webservices extends external_api {
 			$ids[strtolower($obj->name)] = $obj->content;
 		}
 
-		$participant_info['templateName'] = $ids[template];
-		$participant_info['notificationEmail'] = $ids[email];
+		$participant_info['templateName'] = $ids['template'];
+		$participant_info['notificationEmail'] = $ids['email'];
 		*/
 		$participant_info['templateName'] = '';
 		$participant_info['notificationEmail'] = '';
@@ -2279,7 +3188,7 @@ class indes_webservices extends external_api {
 				u.firstname AS firstname,
 				u.lastname AS lastname,
 				u.email AS email
-				FROM {$CFG->prefix}role_assignments ra 
+			FROM {$CFG->prefix}role_assignments ra 
 				JOIN {$CFG->prefix}user u ON u.id = ra.userid
 				JOIN {$CFG->prefix}role r ON r.id = ra.roleid
 				JOIN {$CFG->prefix}context cxt ON cxt.id = ra.contextid
@@ -2297,41 +3206,21 @@ class indes_webservices extends external_api {
 
 		$participants_result = $DB->get_recordset_sql($sql_participants);
 
-		//Inicio metodo, extraer solamente los participantes que tiene 100% de completado en el curso
-		/*$completion = new \completion_info($course);
-
-		$participant_info['participants'] = array();
-		foreach ($participants_result as $participant) {
-			$percentage = core_completion\progress::get_course_progress_percentage($course, $participant->user_id);
-			if (!is_null($percentage)) {
-				$percentage = floor($percentage);
-			}
-			if($percentage == 100){
-				$participants_count++;
-				$participant_info['participants'][$participants_count][userID] = $participant->user_id;
-				$participant_info['participants'][$participants_count][firstName] = $participant->firstname;
-				$participant_info['participants'][$participants_count][lastName] = $participant->lastname;
-				$participant_info['participants'][$participants_count][email] = $participant->email;
-				$participant_info['participants'][$participants_count][percentage] = $percentage;
-			}
-		}*/
-		//Fin metodo, extraer solamente los participantes que tiene 100% de completado en el curso		
-
 		//Inicio metodo,extraer todos los participantes registrados
 		$completion = new \completion_info($course);
 
 		$participant_info['participants'] = array();
 		foreach ($participants_result as $participant) {
-			$percentage = core_completion\progress::get_course_progress_percentage($course, $participant->user_id);			
+			$percentage = core_completion\progress::get_course_progress_percentage($course, $participant->user_id);
 			if (!is_null($percentage)) {
-				$percentage = floor($percentage);
-			}			
+				$percentage = round($percentage, 2);
+			}
 			$participants_count++;
-			$participant_info['participants'][$participants_count][userID] = $participant->user_id;
-			$participant_info['participants'][$participants_count][firstName] = $participant->firstname;
-			$participant_info['participants'][$participants_count][lastName] = $participant->lastname;
-			$participant_info['participants'][$participants_count][email] = $participant->email;
-			$participant_info['participants'][$participants_count][percentage] = $percentage;
+			$participant_info['participants'][$participants_count]['userID'] = $participant->user_id;
+			$participant_info['participants'][$participants_count]['firstName'] = $participant->firstname;
+			$participant_info['participants'][$participants_count]['lastName'] = $participant->lastname;
+			$participant_info['participants'][$participants_count]['email'] = $participant->email;
+			$participant_info['participants'][$participants_count]['percentage'] = $percentage;
 		}
 		//Fin metodo,extraer todos los participantes registrados
 		$participants_count = 0;
@@ -2391,7 +3280,7 @@ class indes_webservices extends external_api {
     public static function get_courses_with_offering() {
         global $CFG, $USER, $DB;
         require_once($CFG->dirroot . "/user/lib.php");
-		
+
 		$sql = "
 			SELECT 
 				c.id,
@@ -2424,11 +3313,11 @@ class indes_webservices extends external_api {
 
         foreach ($courses as $course) {
 
-			$output = array();
+            $output = array();
 
-			$output['courseId'] = $course->id;
+            $output['courseId'] = $course->id;
             $output['offeringId'] = $course->idnumber;
-			$output['shortname'] = $course->shortname;
+            $output['shortname'] = $course->shortname;
             $output['fullname'] = $course->fullname;
             $output['startdate'] = $course->startdate;
 			if ($course->enddate == 0){
@@ -2446,7 +3335,7 @@ class indes_webservices extends external_api {
 
         $courses->close();
 
-		return $outputs;
+        return $outputs;
     }
 
 
@@ -2494,7 +3383,7 @@ class indes_webservices extends external_api {
 		global $DB, $CFG, $PAGE;
 
 		require_once($CFG->dirroot.'/enrol/locallib.php');
-		require_once($CFG->libdir.'/completionlib.php');		
+		require_once($CFG->libdir.'/completionlib.php');
 
 		if (!$surveymonkey = $DB->get_record('surveymonkey', array('surveyid' => $surveyid))) {
 			throw new moodle_exception('surveymonkey_not_found', 'indes_webservices', '', $surveyid);
@@ -2513,7 +3402,7 @@ class indes_webservices extends external_api {
 
         $cm = get_coursemodule_from_instance('surveymonkey', $surveymonkey->id, 0, false, MUST_EXIST);	
 
-		if($completion_info->is_enabled($cm) && !$DB->record_exists('surveymonkey_tracking', $params)){		
+		if($completion_info->is_enabled($cm) && !$DB->record_exists('surveymonkey_tracking', $params)){
 
 			$record = new stdClass();
 			$record->surveyid		= $surveymonkey->id;
@@ -2555,7 +3444,7 @@ class indes_webservices extends external_api {
     public static function get_sm_surveys_by_courses() {
         global $CFG, $USER, $DB;
         require_once($CFG->dirroot . "/user/lib.php");
-		
+
 		$sql = "
 			SELECT 
 				sm.id,
@@ -2575,19 +3464,19 @@ class indes_webservices extends external_api {
 
         foreach ($courses as $course) {
 
-			$output = array();
+            $output = array();
 
-			$output['smId'] = $course->id;
+            $output['smId'] = $course->id;
             $output['smName'] = $course->name;
-			$output['smCourse'] = $course->course;
+            $output['smCourse'] = $course->course;
             $output['smSurveyId'] = $course->surveyid;
 
-			$outputs[] = $output;
+            $outputs[] = $output;
         }
 
         $courses->close();
 
-		return $outputs;
+        return $outputs;
     }
 
 
@@ -2651,20 +3540,20 @@ class indes_webservices extends external_api {
 
         foreach ($courses as $course) {
 
-			$output = array();
+            $output = array();
 
-			$output['smCourseId'] = $course->course;
+            $output['smCourseId'] = $course->course;
             $output['smSurveyId'] = $course->surveyid;
             $output['smUserId'] = $course->userid;
-            $output['smEmail'] = $course->email;			
-			$output['smSidEmail'] = $course->sid_uemail;
+            $output['smEmail'] = $course->email;
+            $output['smSidEmail'] = $course->sid_uemail;
 
-			$outputs[] = $output;
+            $outputs[] = $output;
         }
 
         $courses->close();
 
-		return $outputs;
+        return $outputs;
     }
 
 
@@ -2683,8 +3572,160 @@ class indes_webservices extends external_api {
 					'smSidEmail'    		=> new external_value(PARAM_RAW, 'Concatenation of Survey ID plus | plus user email to create a unique string')
 				)
 			)
-		);		
-    }	
+		);
+    }
+
+
+	/**
+	 * Returns description of method parameters
+	 * @return external_function_parameters
+	 */
+	public static function update_bigbluebuttonbn_recordings_parameters() {
+		return new external_function_parameters(
+			array(
+					'idrecording' 		=> new external_value(PARAM_INT, 'ID of the recording'),
+					'courseid' 			=> new external_value(PARAM_INT, 'ID of Moodle course'),
+					'bigbluebuttonbnid'	=> new external_value(PARAM_INT, 'ID of the BBB instance'),
+					'status' 			=> new external_value(PARAM_INT, 'new status of the recording'),
+					'confirmation' 		=> new external_value(PARAM_RAW, 'String Y to update the record')
+				)
+		);
+	}
+
+
+	/**
+	 * Update the status of a specific recording in the table mdl_bigbluebuttonbn_recordings
+	 * @param int $idrecording ID of the recording from the table mdl_bigbluebuttonbn_recordings
+	 * @param int $courseid ID of the course
+	 * @param int $bigbluebuttonbnid ID of the BBB instance, from table mdl_bigbluebuttonbn
+	 * @param int $status new status of the recording, possible values: 0, 1, 2, 3, 4 or 5	 
+	 * @param string $confirmation value "Y" to Update, if is different the query won't will run
+	 * @return null
+	 */
+	public static function update_bigbluebuttonbn_recordings($idrecording, $courseid, $bigbluebuttonbnid, $status, $confirmation) {
+		global $DB, $CFG;
+
+		if($confirmation == "Y"){
+			$sql = "UPDATE {$CFG->prefix}bigbluebuttonbn_recordings mbr
+					INNER JOIN {$CFG->prefix}bigbluebuttonbn mbb on mbb.id = mbr.bigbluebuttonbnid
+					SET status = $status
+					WHERE mbr.id = $idrecording AND mbr.courseid = $courseid AND mbr.bigbluebuttonbnid = $bigbluebuttonbnid";
+			echo $sql;
+			echo "\n";
+			$DB->execute($sql);
+		}else{
+			echo "Record Not Updated";
+		}
+	}
+
+
+	/**
+	 * The method update_bigbluebuttonbn_recordings does not return anything
+	 * @return null
+	 */
+	public static function update_bigbluebuttonbn_recordings_returns() {
+		return null;
+	}
+
+
+	/**
+	 * Returns description of method parameters
+	 * @return external_function_parameters
+	 */
+	public static function update_bigbluebuttonbn_recordingids_parameters() {
+		return new external_function_parameters(
+			array(
+					'idrecording' 		=> new external_value(PARAM_INT, 'ID of the recording'),
+					'courseid' 			=> new external_value(PARAM_INT, 'ID of Moodle course'),
+					'bigbluebuttonbnid'	=> new external_value(PARAM_INT, 'ID of the BBB instance'),
+					'recordingid' 		=> new external_value(PARAM_RAW, 'new status of the recording'),
+					'confirmation' 		=> new external_value(PARAM_RAW, 'String Y to update the record')
+				)
+		);
+	}
+
+
+	/**
+	 * Update the recordingid of a specific recording in the table mdl_bigbluebuttonbn_recordings
+	 * @param int $idrecording ID of the recording from the table mdl_bigbluebuttonbn_recordings
+	 * @param int $courseid ID of the course
+	 * @param int $bigbluebuttonbnid ID of the BBB instance, from table mdl_bigbluebuttonbn
+	 * @param int $recordingid new recordingid of the recording
+	 * @param string $confirmation value "Y" to Update, if is different the query won't will run
+	 * @return null
+	 */
+	public static function update_bigbluebuttonbn_recordingids($idrecording, $courseid, $bigbluebuttonbnid, $recordingid, $confirmation) {
+		global $DB, $CFG;
+
+		if($confirmation == "Y"){
+			$sql = "UPDATE {$CFG->prefix}bigbluebuttonbn_recordings mbr
+					INNER JOIN {$CFG->prefix}bigbluebuttonbn mbb on mbb.id = mbr.bigbluebuttonbnid
+					SET recordingid = '$recordingid'
+					WHERE mbr.id = $idrecording AND mbr.courseid = $courseid AND mbr.bigbluebuttonbnid = $bigbluebuttonbnid";
+			echo $sql;
+			echo "\n";
+			$DB->execute($sql);
+		}else{
+			echo "Record Not Updated";
+		}
+	}
+
+
+	/**
+	 * The method update_bigbluebuttonbn_recordings does not return anything
+	 * @return null
+	 */
+	public static function update_bigbluebuttonbn_recordingids_returns() {
+		return null;
+	}
+
+
+	/**
+	 * Returns description of method parameters
+	 * @return external_function_parameters
+	 */
+	public static function delete_bigbluebuttonbn_recordings_parameters() {
+		return new external_function_parameters(
+			array(
+					'idrecording' 		=> new external_value(PARAM_INT, 'ID of the recording'),
+					'courseid' 			=> new external_value(PARAM_INT, 'ID of Moodle course'),
+					'bigbluebuttonbnid'	=> new external_value(PARAM_INT, 'ID of the BBB instance'),
+					'confirmation' 		=> new external_value(PARAM_RAW, 'String Y to delete the record')
+				)
+		);
+	}
+
+
+	/**
+	 * Delete a specific recording in the table mdl_bigbluebuttonbn_recordings
+	 * @param int $idrecording ID of the recording from the table mdl_bigbluebuttonbn_recordings
+	 * @param int $courseid ID of the course
+	 * @param int $bigbluebuttonbnid ID of the BBB instance, from table mdl_bigbluebuttonbn
+	 * @param string $confirmation value "Y" to Update, if is different the query won't will run
+	 * @return null
+	 */
+	public static function delete_bigbluebuttonbn_recordings($idrecording, $courseid, $bigbluebuttonbnid, $confirmation) {
+		global $DB, $CFG;
+
+		if($confirmation == "Y"){
+			$sql = "DELETE FROM {$CFG->prefix}bigbluebuttonbn_recordings
+					WHERE id = $idrecording AND courseid = $courseid AND bigbluebuttonbnid = $bigbluebuttonbnid";
+			echo $sql;
+			echo "\n";
+			$DB->execute($sql);
+		}else{
+			echo "Record Not Deleted";
+		}
+	}
+
+
+	/**
+	 * The method delete_bigbluebuttonbn_recordings does not return anything
+	 * @return null
+	 */
+	public static function delete_bigbluebuttonbn_recordings_returns() {
+		return null;
+	}
 }
 
 /**
@@ -2692,11 +3733,11 @@ class indes_webservices extends external_api {
  */
 function filterProfileFields($field, $value){
 	$filteredValue = '';
-	
+
 	switch ($field) {
 		case PROFILE_FIELD_INSTITUTION_TYPE:
 			$filteredValue = trim(format_string($value));
-			
+
 			if (preg_match('/International Organization/', $filteredValue) || preg_match('/Org Internacional/', $filteredValue) || preg_match('/Organización Internacional/', $filteredValue) || preg_match('/Org International/', $filteredValue)) {
 				$filteredValue = "International Organization";
 			}
@@ -2720,13 +3761,13 @@ function filterProfileFields($field, $value){
 			}
 			elseif (preg_match('/Private Sector/', $filteredValue) || preg_match('/Sector Privado/', $filteredValue) || preg_match('/Setor Privado/', $filteredValue) || preg_match('/Secteur privé/', $filteredValue)) {
 				$filteredValue = "Private Sector";
-			}				
-			
+			}
+
 			break;
-			
+
 		case PROFILE_FIELD_GENDER:
 			$filteredValue = trim(format_string($value));
-			
+
 			if (preg_match('/Female/', $filteredValue) || preg_match('/Feminino/', $filteredValue) || preg_match('/Femenino/', $filteredValue) || preg_match('/Féminin/', $filteredValue)) {
 				$filteredValue = "F";
 			}
@@ -2741,7 +3782,7 @@ function filterProfileFields($field, $value){
 
 		case PROFILE_FIELD_HIGHEST_DEGREE:
 			$filteredValue = trim(format_string($value));
-			
+
 			if (preg_match('/4 Year College/', $filteredValue) || preg_match('/Graduación/', $filteredValue) || preg_match('/Graduação/', $filteredValue) || preg_match('/Licence/', $filteredValue)) {
 				$filteredValue = "4 Year College";
 			}
@@ -2757,9 +3798,9 @@ function filterProfileFields($field, $value){
 			elseif (preg_match('/Ph.D/JD/MD/', $filteredValue) || preg_match('/Doctorado/', $filteredValue) || preg_match('/Doutorado/', $filteredValue)  || preg_match('/Doctorat/Doctorat en Médecine\/Doctorat de Droit/', $filteredValue)) {
 				$filteredValue = "Ph.D/JD/MD";
 			}
-			
+
 			break;
-			
+
 		case PROFILE_COUNTRY:
 			$filteredValue = trim(format_string($value));
 
