@@ -23,9 +23,9 @@
  * Based on the work of Jerome Mouneyrac (package local_wstemplate)
  */
 
-$plugin->version  = 2020052501;
+$plugin->version  = 2024092502;
 $plugin->requires = 2010112400;  // Requires this Moodle version - at least 2.0
 $plugin->component = 'local_indes_webservices'; // Full name of the plugin (used for diagnostics)
 $plugin->cron     = 0;
-$plugin->release = '3.1 (Build: 2016101000)';
+$plugin->release = '3.3 (Build: 2024081200)';
 $plugin->maturity = MATURITY_STABLE;
