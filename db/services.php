@@ -136,6 +136,13 @@ $functions = array(
             'description' => 'Get the enrolled & dropout participants (without firstname & lastname) with their grade from a category (courses), including user status',
             'type'        => 'read',
         ),
+        'indes_webservices_kpi_basic_grades_participant_category' => array(
+            'classname'   => 'indes_webservices',
+            'methodname'  => 'kpi_basic_grades_participant_category',
+            'classpath'   => 'local/indes_webservices/externallib.php',
+            'description' => 'Get the enrolled & dropout participants IDs, progress and user status',
+            'type'        => 'read',
+        ),
         'indes_webservices_get_enrollment_participants_category' => array(
             'classname'   => 'indes_webservices',
             'methodname'  => 'get_enrollment_participants_category',
@@ -232,7 +239,7 @@ $functions = array(
 // We define the services to install as pre-build services. A pre-build service is not editable by administrator.
 $services = array(
 	'INDES Web Services' => array(
-		'functions' => array ('indes_webservices_sync_registrations', 'indes_webservices_sync_outputs', 'indes_webservices_sync_total_registrations', 'indes_webservices_enrol_student', 'indes_webservices_unenrol_student', 'indes_webservices_sync_participants_profile_updated','indes_webservices_sync_participants_dropout', 'indes_webservices_sync_facilitators',  'limesurvey_mark_as_completed', 'indes_webservices_get_grade_participant', 'indes_webservices_get_grades_course', 'indes_webservices_get_gradable_activities_course', 'indes_webservices_get_grades_participant_category', 'indes_webservices_get_nameless_grades_participant_category', 'indes_webservices_get_nameless_grades_participants_by_category', 'indes_webservices_kpi_get_nameless_grades_participant_category', 'indes_webservices_get_enrollment_participants_category', 'indes_webservices_validate_certificate','indes_webservices_get_categories','indes_webservices_get_questionnaire_course','indes_webservices_get_sm_participants','indes_webservices_get_sm_participants_by_course','indes_webservices_get_courses_with_offering','surveymonkey_mark_as_completed','indes_webservices_get_sm_surveys_by_courses','indes_webservices_get_sm_users_completed','indes_webservices_update_bigbluebuttonbn_recordings','indes_webservices_update_bigbluebuttonbn_recordingids','indes_webservices_delete_bigbluebuttonbn_recordings'),
+		'functions' => array ('indes_webservices_sync_registrations', 'indes_webservices_sync_outputs', 'indes_webservices_sync_total_registrations', 'indes_webservices_enrol_student', 'indes_webservices_unenrol_student', 'indes_webservices_sync_participants_profile_updated','indes_webservices_sync_participants_dropout', 'indes_webservices_sync_facilitators',  'limesurvey_mark_as_completed', 'indes_webservices_get_grade_participant', 'indes_webservices_get_grades_course', 'indes_webservices_get_gradable_activities_course', 'indes_webservices_get_grades_participant_category', 'indes_webservices_get_nameless_grades_participant_category', 'indes_webservices_get_nameless_grades_participants_by_category', 'indes_webservices_kpi_get_nameless_grades_participant_category', 'indes_webservices_kpi_basic_grades_participant_category', 'indes_webservices_get_enrollment_participants_category', 'indes_webservices_validate_certificate','indes_webservices_get_categories','indes_webservices_get_questionnaire_course','indes_webservices_get_sm_participants','indes_webservices_get_sm_participants_by_course','indes_webservices_get_courses_with_offering','surveymonkey_mark_as_completed','indes_webservices_get_sm_surveys_by_courses','indes_webservices_get_sm_users_completed','indes_webservices_update_bigbluebuttonbn_recordings','indes_webservices_update_bigbluebuttonbn_recordingids','indes_webservices_delete_bigbluebuttonbn_recordings'),
 		'restrictedusers' => 0,
 		'enabled'=>1,
 	)
