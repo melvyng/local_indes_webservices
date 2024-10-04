@@ -126,14 +126,14 @@ $functions = array(
             'classname'   => 'indes_webservices',
             'methodname'  => 'get_nameless_grades_participants_by_category',
             'classpath'   => 'local/indes_webservices/externallib.php',
-            'description' => 'Get the enrolled & dropout participants (without firstname & lastname) with their grade from a category (courses), not including user status',
+            'description' => 'Get the enrolled & dropout participants (without firstname & lastname) with their grade from a category (courses) without user status',
             'type'        => 'read',
         ),
         'indes_webservices_kpi_get_nameless_grades_participant_category' => array(
             'classname'   => 'indes_webservices',
             'methodname'  => 'kpi_get_nameless_grades_participant_category',
             'classpath'   => 'local/indes_webservices/externallib.php',
-            'description' => 'Get the enrolled & dropout participants (without firstname & lastname) with their grade from a category (courses), including user status',
+            'description' => 'Get the enrolled & dropout participants (without firstname & lastname) with their grade from a category (courses), not including user status',
             'type'        => 'read',
         ),
         'indes_webservices_kpi_basic_grades_participant_category' => array(

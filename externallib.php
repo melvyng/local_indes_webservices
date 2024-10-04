@@ -1630,7 +1630,7 @@ class indes_webservices extends external_api {
 
 
     /**
-     * Get the enrolled & dropout participants with their grade from a category (courses)
+     * Get the enrolled & dropout participants (without firstname & lastname) with their grade from a category (courses), including user status
      * @return external_function_parameters
      */
     public static function get_nameless_grades_participant_category_parameters() {
@@ -1643,7 +1643,7 @@ class indes_webservices extends external_api {
     }
 
     /**
-    * Get the enrolled & dropout participants (without firstname & lastname) with their grade from a category (courses)
+    * Get the enrolled & dropout participants (without firstname & lastname) with their grade from a category (courses), including user status
     * @param int $categoryid Category ID
     */
 	public static function get_nameless_grades_participant_category($categoryid, $startdate = NULL) {
@@ -1854,7 +1854,7 @@ class indes_webservices extends external_api {
 
 
     /**
-     * Returns structure for method get_grades_participant_category
+     * Returns structure for method get_nameless_grades_participant_category
      * @return structure
      */
     public static function get_nameless_grades_participant_category_returns() {
@@ -1894,7 +1894,7 @@ class indes_webservices extends external_api {
 
 
     /**
-     * Get the enrolled & dropout participants with their grade from a category (courses)
+     * Get the enrolled & dropout participants (without firstname & lastname) with their grade from a category (courses), not including user status
      * @return external_function_parameters
      */
     public static function kpi_get_nameless_grades_participant_category_parameters() {
@@ -1908,7 +1908,7 @@ class indes_webservices extends external_api {
 
 
     /**
-    * Get the enrolled & dropout participants (without firstname & lastname) with their grade from a category (courses)
+    * Get the enrolled & dropout participants (without firstname & lastname) with their grade from a category (courses), not including user status
     * @param int $categoryid Category ID
     */
 	public static function kpi_get_nameless_grades_participant_category($categoryid, $startdate = NULL) {
@@ -2097,7 +2097,7 @@ class indes_webservices extends external_api {
 
 
     /**
-    * Get the enrolled & dropout participants IDs, progress and user status with their grade from a category (courses)
+    * Get the enrolled & dropout participants IDs, progress and user status
     * @param int $categoryid Category ID
     */
 	public static function kpi_basic_grades_participant_category($categoryid, $startdate = NULL) {
@@ -2411,7 +2411,7 @@ class indes_webservices extends external_api {
 
 
     /**
-     * Returns structure for method grades_participants_by_category
+     * Returns structure for method get_nameless_grades_participants_by_category
      * @return structure
      */
     public static function get_nameless_grades_participants_by_category_returns() {

@@ -1,4 +1,4 @@
-Web service plugin for Moodle 3.X
+Web service plugin for Moodle 4.X
 ------------------------------------------
 
 To test:
@@ -16,6 +16,10 @@ List of functions included:
 - indes_webservices_get_grade_participant : Get the final course grade for a single user in a course
 - indes_webservices_get_grades_course : Get the final course grade(s) for a single course for one or more users
 - indes_webservices_get_grades_participant_category : Get the enrolled & dropout participants with their grade from a category (courses)
+- indes_webservices_get_nameless_grades_participant_category : Get the enrolled & dropout participants (without firstname & lastname) with their grade from a category (courses), including user status
+- indes_webservices_get_nameless_grades_participants_by_category : Get the enrolled & dropout participants (without firstname & lastname) with their grade from a category (courses) without user status
+- indes_webservices_kpi_get_nameless_grades_participant_category : Get the enrolled & dropout participants (without firstname & lastname) with their grade from a category (courses), not including user status
+- indes_webservices_kpi_basic_grades_participant_category : Get the enrolled & dropout participants IDs, progress and user status
 - indes_webservices_get_questionnaire_course : Get the questionnaire(s), question and answers for a single course
 - indes_webservices_get_sm_participants : Get the enrolled & completed participants from a date (courses) for SurveyMonkey
 - indes_webservices_get_sm_participants_by_course : Get the enrolled & completed participants from a course for SurveyMonkey
@@ -31,3 +35,6 @@ List of functions included:
 - indes_webservices_validate_certificate : Verify if the code given is a valid certificate
 - limesurvey_mark_as_completed : Mark a LimeSurvey activity as completed for a specific participant
 - surveymonkey_mark_as_completed : Mark a SurveyMonkey activity as completed for a specific participant
+- indes_webservices_update_bigbluebuttonbn_recordings : Update the status of a specific recording in the table mdl_bigbluebuttonbn_recordings
+- indes_webservices_update_bigbluebuttonbn_recordingids : Update the recordingid of a specific recording in the table mdl_bigbluebuttonbn_recordings
+- indes_webservices_delete_bigbluebuttonbn_recordings : Delete a specific recording in the table mdl_bigbluebuttonbn_recordings
